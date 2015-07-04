@@ -63,6 +63,7 @@ class ApplicationStrategy(StrategicAlternative):
         Raises:
             OSError: problems with reading or writing configuration files
         """
+        print(filename)
         p = pathlib.Path(filename)
         content = ''
 
@@ -74,9 +75,9 @@ class ApplicationStrategy(StrategicAlternative):
             exit(1)
 
         if enable:
-            content = re.sub("(auth-user-pass)(?:.*)", "auth-user-pass " + props.login_config, content)
+            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + props.login_config, content)
         else:
-            content = re.sub("(auth-user-pass)(?:.*)", "auth-user-pass", content)
+            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
 
         try:
             with open(filename, "w") as f:

@@ -17,6 +17,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pathlib
+
 from pia.utils import has_proper_permissions
 from pia.applications.Application import Application
 

@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2.0.1 (2015-07-04)
+------------------
+- Bug fixes
+- Moved sources into 'src/'
+- Fixed the way the templates configs are stored. Uses package-data instead of data-files.
+  Some reason it was trying to store the template-configs directly in '/usr' which never should
+  have happened.
+
 2.0 (2015-07-03)
 ----------------
 - Completely reworked script as a python module

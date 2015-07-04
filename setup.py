@@ -32,7 +32,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='pia',
 
-    version='2.0',
+    version='2.0.1',
 
     description='Private Internet Access Auto Configuration',
     long_description=long_description,
@@ -63,14 +63,14 @@ setup(
 
     keywords='openvpn vpn commandline',
 
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
+    packages=find_packages('src', exclude=['contrib', 'docs', 'tests*']),
+    package_dir={'': 'src'},
+    package_data={'pia.applications': ['template-configs/*.cfg']},
 
     extras_require={
         'dev': ['check-manifest'],
         'test': ['coverage'],
     },
-
-    data_files=[('template-configs', glob.glob('template-configs/*.cfg'))],
 
     entry_points={
         'console_scripts': [

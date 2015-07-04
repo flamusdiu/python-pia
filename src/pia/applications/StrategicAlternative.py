@@ -1,7 +1,9 @@
 import os
+from pprint import pprint
 import sys
 
-from ..utils import multiple_replace
+from pia.utils import multiple_replace
+from pkg_resources import resource_string, resource_stream, resource_exists, resource_listdir
 
 # -*- coding: utf-8 -*-
 
@@ -123,11 +125,7 @@ class StrategicAlternative(object):
         Raises:
             OSError: problem reading the template file from the file system.
         """
-        p = os.path.join(sys.prefix, 'template-configs') + '/' + self.strategy + '.cfg'
         try:
-            with open(p) as f:
-                contents = f.read()
+            return resource_string(__name__, 'template-configs/' + self.strategy + '.cfg').decode()
         except OSError:
             return None
-
-        return contents

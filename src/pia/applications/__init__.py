@@ -1,4 +1,3 @@
-# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 #    Private Internet Access Configuration auto-configures VPN files for PIA
@@ -17,7 +16,5 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__VERSION__ = (2, 0)
-
-from pia.properties import props
-import pia.utils
+from . import StrategicAlternative
+from pia.applications import Application, StrategicAlternative

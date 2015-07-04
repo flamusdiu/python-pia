@@ -18,6 +18,7 @@
 
 import os
 import argparse
+
 from pia.properties import props
 
 
@@ -78,7 +79,7 @@ def run():
 
             if props.configure:
                 for app in props.apps.keys():
-                    if props.progs[app]:
+                    if props.progs[app] and not app == 'openvpn':
                         props.apps[app].config(config_id, filename)
     else:
         for app in props.apps.keys():

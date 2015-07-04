@@ -17,8 +17,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from uuid import uuid4
-from pia.properties import Props
 
+from pia.properties import Props
 from pia.applications.StrategicAlternative import StrategicAlternative
 from pia.applications.hooks.openvpn import ApplicationStrategy as openVPN
 

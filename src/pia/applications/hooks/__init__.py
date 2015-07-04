@@ -16,4 +16,5 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import Application, StrategicAlternative
+from . import cm, openvpn
+from pia.applications.hooks import nm, cm, openvpn
