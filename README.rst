@@ -2,7 +2,7 @@
 Private Internet Access Configuration
 =====================================
 Command-line tool
------------------
+-------------------------------------
 
 DESCRIPTION
 ===========
@@ -18,7 +18,7 @@ OPTIONS
                                                      listed program. Maybe used more then once.
 ``-v, --verbose``                                    Enables more verbose logging
 ``--version``                                        show program's version number and exit
-==================================================   =============================================
+=================================================    ============================================
 
 INSTALLATION/USAGE
 ==================
