@@ -1,0 +1,6 @@
+include DESCRIPTION.rst README.rst CHANGES.rst
+include template-configs/*.cfg
+
+#recursive-include tests *
+#recursive-exclude tests *.pyc
+#recursive-exclude tests *.pyo
