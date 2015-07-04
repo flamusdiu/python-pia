@@ -1,6 +1,12 @@
 Changelog
 =========
 
+2.1 (2015-07-04)
+----------------
+- Minor fixes
+- Added option to list known OpenVPN configurations. Each configuration will be marked if it's configured for an
+  application.
+
 2.0.1 (2015-07-04)
 ------------------
 - Bug fixes

@@ -129,3 +129,14 @@ class StrategicAlternative(object):
             return resource_string(__name__, 'template-configs/' + self.strategy + '.cfg').decode()
         except OSError:
             return None
+
+    def find_config(self, config_id):
+        """Find if a configuration is configured
+
+        Args:
+            config_id: configuration name
+
+        Returns:
+            Returns bool depending on if the configuration is already installed
+        """
+        pass

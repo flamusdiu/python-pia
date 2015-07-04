@@ -118,3 +118,7 @@ class ApplicationStrategy(StrategicAlternative):
             return None
 
         return ''.join(re.findall("(?:remote.)(.*)(?:.\d{4})", contents))
+
+    def find_config(self, config_id):
+        """Not implemented for OpenVPN. No need to search for a configuration."""
+        raise NotImplementedError

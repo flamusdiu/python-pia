@@ -17,6 +17,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from uuid import uuid4
+import os
 
 from pia.properties import Props
 from pia.applications.StrategicAlternative import StrategicAlternative
@@ -56,7 +57,20 @@ class ApplicationStrategy(StrategicAlternative):
                    "##remote##": openVPN.get_remote_address(filename)}
 
         # Complete path of configuration file
-        nm_conf = self.conf_dir + "/" + config_id
+        conf = self.conf_dir + "/" + config_id
 
         # Modifies configuration file
-        self.update_config(re_dict, nm_conf)
+        self.update_config(re_dict, conf)
+
+    def find_config(self, config_id):
+        """Find if a configuration is configured
+
+        Args:
+            config_id: configuration name
+
+        Returns:
+            Returns bool depending on if the configuration is already installed
+        """
+        conf = self.conf_dir + "/" + config_id
+
+        return os.access(conf, os.F_OK)

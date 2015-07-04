@@ -18,14 +18,14 @@
 
 import os
 import argparse
+import sys
 
 from pia.properties import props
 
 
-def run():
-    """Main function run from command line"""
+def menu():
+    """Command line menu configuration."""
 
-    # Command line menu configuration.
     # All options are stored globally in 'props' var.
     parser = argparse.ArgumentParser(
         description='Configures PIA VPN Services for Connman, Network Manager, and OpenVPN')
@@ -35,20 +35,61 @@ def run():
                        help='Automatically generates configurations')
     group.add_argument('-r', '--remove-configurations', dest='configure', action='store_false',
                        help='Removes auto-generated configurations')
+    parser.add_argument('-l', '--list-configurations', dest='list', action='store_true',
+                        help='Lists known OpenVPN hosts')
     parser.add_argument('-e', '--exclude', dest='exclude', choices=props.progs, action='append',
                         help='Excludes modifying the configurations of the listed program. Maybe used more then once.')
-    parser.add_argument('host', nargs='*', help='Lists of host names to configure')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='Enables more verbose logging')
-    parser.add_argument('--version', action='version', version='%(prog)s 1.5')
+    parser.add_argument('host', nargs='*', help='A list of host names to configure')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                        help='Enables more verbose logging')
+    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
     parser.parse_args(namespace=props)
+
+
+def print_config_list():
+    """Prints a list of installed OpenVPN configurations."""
+    lis = props.apps['openvpn'].app.configs.keys()
+    configs = {}
+
+    # Changes the list of configs to a dictionary
+    for item in lis:
+        configs[item] = []
+
+    # Checks if configuration is installed for a given config_id
+    for config_id in configs:
+        for app in props.apps:
+            if not app == 'openvpn':
+                configs[config_id].append(
+                    {'app': app,
+                     'configured': props.apps[app].app.find_config(config_id)}
+                )
+
+    # Prints out the list
+    print("List of OpenVPN configurations")
+    for c in sorted(configs):
+        config = configs[c]
+        dis = ''
+        for app in config:
+            if app['configured']:
+                dis += '[' + app['app'] + ']'
+        print('   %s %s' % (c, dis))
+    sys.exit()
+
+
+def run():
+    """Main function run from command line"""
+    menu()
+
+    # Checks to see which supported applications are installed
+    props.check_installed()
+
+    if props.list:
+        print_config_list()
 
     # Make sure we are running as root
     if os.getuid() > 0:
         print('ERROR: You must run this script with administrative privileges!')
-        exit(1)
-
-    # Checks to see which supported applications are installed
-    props.check_installed()
+        sys.exit(1)
 
     # If "-e" option was given, then make sure to set that application as 'False'
     # to keep from having it configured and cause errors.
