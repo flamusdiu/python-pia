@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2.1.1 (2015-07-05)
+------------------
+- Fixed missing setuptools if not installed
+
 2.1 (2015-07-04)
 ----------------
 - Minor fixes

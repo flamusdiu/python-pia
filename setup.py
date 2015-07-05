@@ -17,7 +17,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Always prefer setuptools over distutils
-import glob
+import ez_setup
+ez_setup.use_setuptools()
+
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
@@ -32,7 +34,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='pia',
 
-    version='2.1',
+    version='2.1.1',
 
     description='Private Internet Access Auto Configuration',
     long_description=long_description,
