@@ -17,9 +17,11 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pathlib
+import re
 
 from pia.utils import has_proper_permissions
 from pia.applications.Application import Application
+from pkg_resources import resource_listdir
 
 
 class Props(object):
@@ -31,8 +33,11 @@ class Props(object):
         apps: dictionary of application objects that will be configured
     """
     _login_config = '/etc/private-internet-access/login.conf'
-    _progs = {'cm': False, 'nm': False, 'openvpn': False}
+    _progs = dict()
     _apps = dict()
+
+    def __init__(self):
+        self.progs = self.get_configured_apps()
 
     @property
     def login_config(self):
@@ -41,8 +46,13 @@ class Props(object):
 
     @property
     def progs(self):
-        """list of supported programs"""
+        """list of supported programs."""
         return self._progs
+
+    @progs.setter
+    def progs(self, progs):
+        """Sets the programs based on get_configured_apps()."""
+        self._progs = progs
 
     @property
     def apps(self):
@@ -81,5 +91,20 @@ class Props(object):
             return None
 
         return list(filter(bool,content))
+
+    @classmethod
+    def get_configured_apps(cls):
+        """Scans Hooks folder for application files
+
+        Returns:
+            A list of configured applications in a dictionary
+        """
+        configured_apps=dict()
+        for a in [f[:-3] for f in resource_listdir(__name__,'applications/hooks')
+                  if not re.match(r'__[A-Za-z0-9]*__', f)]:
+
+            configured_apps[a] = False
+
+        return configured_apps
 
 props = Props()  # creates global property object
