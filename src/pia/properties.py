@@ -18,6 +18,7 @@
 
 import pathlib
 import re
+import sys
 
 from pia.utils import has_proper_permissions
 from pia.applications.Application import Application
@@ -100,10 +101,14 @@ class Props(object):
             A list of configured applications in a dictionary
         """
         configured_apps=dict()
-        for a in [f[:-3] for f in resource_listdir(__name__,'applications/hooks')
-                  if not re.match(r'__[A-Za-z0-9]*__', f)]:
+        try:
+            for a in [f[:-3] for f in resource_listdir(__name__,'applications/hooks')
+                      if not re.match(r'__[A-Za-z0-9]*__', f)]:
 
-            configured_apps[a] = False
+                configured_apps[a] = False
+        except OSError:
+            print("ERROR: Cannot read application hooks.")
+            sys.exit(1)
 
         return configured_apps
 
