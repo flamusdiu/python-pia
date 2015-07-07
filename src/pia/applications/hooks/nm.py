@@ -19,9 +19,10 @@
 from uuid import uuid4
 import os
 
-from pia.properties import Props
+import pia
 from pia.applications.StrategicAlternative import StrategicAlternative
 from pia.applications.hooks.openvpn import ApplicationStrategy as openVPN
+from pia.utils import get_login_credentials
 
 
 class ApplicationStrategy(StrategicAlternative):
@@ -33,6 +34,9 @@ class ApplicationStrategy(StrategicAlternative):
     """
     _conf_dir = '/etc/NetworkManager/system-connections'
     _command_bin = ['/usr/bin/nmcli', '/usr/lib/networkmanager/nm-openvpn-service']
+
+    def __init__(self):
+        super().__init__('nm')
 
     def config(self, config_id, filename, enable=None):
         """Configures configuration file for the given strategy.
@@ -47,7 +51,7 @@ class ApplicationStrategy(StrategicAlternative):
         """
 
         # Gets VPN username and password
-        username, password = Props.get_login_credentials()
+        username, password = get_login_credentials(pia.properties.props.login_config)
 
         # Directory of replacement values for NetworkManager's configuration files
         re_dict = {"##username##": username,

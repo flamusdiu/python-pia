@@ -33,6 +33,9 @@ class ApplicationStrategy(StrategicAlternative):
     _conf_dir = '/var/lib/connman-vpn'
     _command_bin = ['/usr/bin/connmanctl']
 
+    def __init__(self):
+        super().__init__('cm')
+
     def config(self, config_id, filename, enable=None):
         """Configures configuration file for the given strategy.
 
