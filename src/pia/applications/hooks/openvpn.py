@@ -19,9 +19,8 @@
 import pathlib
 import glob
 import re
-
+import pia
 from pia.applications.StrategicAlternative import StrategicAlternative
-from pia.properties import props
 
 
 class ApplicationStrategy(StrategicAlternative):
@@ -48,8 +47,8 @@ class ApplicationStrategy(StrategicAlternative):
         """the list of openVPN configurations to modify"""
         self._configs = configs
 
-    def __init__(self, strategy):
-        super().__init__(strategy)
+    def __init__(self):
+        super().__init__('openvpn')
         self.get_configs()
 
     def config(self, config_id, filename, enable=True):
@@ -75,7 +74,7 @@ class ApplicationStrategy(StrategicAlternative):
             exit(1)
 
         if enable:
-            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + props.login_config, content)
+            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + pia.properties.props.login_config, content)
         else:
             content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
 

@@ -1,5 +1,15 @@
 Changelog
 =========
+2.2 (2015-07-07)
+----------------
+- Added ability to add a configuration file. It must be in '/etc/private-internet-access-vpn' and
+  named 'pia.conf.' I plan to add a way to override this in the next version.
+
+  Note: that only a few sections are supported with a few options (mainly to replace the commandline
+  switches). Options are parsed in the following order: Defaults > Conf File > Commandline switches
+
+- Refactored the way each supported application is called to simplify the code.
+
 
 2.1.1 (2015-07-05)
 ------------------

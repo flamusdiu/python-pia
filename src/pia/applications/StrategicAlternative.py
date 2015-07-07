@@ -1,10 +1,3 @@
-import os
-from pprint import pprint
-import sys
-
-from pia.utils import multiple_replace
-from pkg_resources import resource_string, resource_stream, resource_exists, resource_listdir
-
 # -*- coding: utf-8 -*-
 
 #    Private Internet Access Configuration auto-configures VPN files for PIA
@@ -22,6 +15,11 @@ from pkg_resources import resource_string, resource_stream, resource_exists, res
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+from pia.utils import multiple_replace
+from pkg_resources import resource_string
+
 
 class StrategicAlternative(object):
     """Each application requires its own StrategicAlternative object
@@ -68,7 +66,7 @@ class StrategicAlternative(object):
         """name of which strategy created this class"""
         return self._strategy
 
-    def __init__(self, strategy):
+    def __init__(self, strategy=None):
         self._strategy = strategy
         self._config_template = self.get_config_template()
 
@@ -78,12 +76,12 @@ class StrategicAlternative(object):
 
     def remove_configs(self):
         """Removes all configurations for a strategy"""
-        for f in os.listdir(self.conf_dir):
-            path = os.path.join(self.conf_dir, f)
-            try:
+        try:
+            for f in os.listdir(self.conf_dir):
+                path = os.path.join(self.conf_dir, f)
                 os.remove(path)
-            except OSError:
-                pass
+        except OSError:
+            pass
 
     def update_config(self, re_dict, conf):
         """Modifies configuration file with dictionary

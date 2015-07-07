@@ -20,6 +20,8 @@ import os
 import argparse
 import sys
 
+from pia import properties
+from pia.applications import Application
 from pia.properties import props
 
 
@@ -37,9 +39,9 @@ def menu():
                        help='Removes auto-generated configurations')
     parser.add_argument('-l', '--list-configurations', dest='list', action='store_true',
                         help='Lists known OpenVPN hosts')
-    parser.add_argument('-e', '--exclude', dest='exclude', choices=props.progs, action='append',
+    parser.add_argument('-e', '--exclude', dest='exclude', choices=props.exclude_apps, action='append',
                         help='Excludes modifying the configurations of the listed program. Maybe used more then once.')
-    parser.add_argument('host', nargs='*', help='A list of host names to configure')
+    parser.add_argument('hosts', nargs='*', help='A list of host names to configure')
     parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                         help='Enables more verbose logging')
     parser.add_argument('--version', action='version', version='%(prog)s 2.1')
@@ -48,30 +50,29 @@ def menu():
 
 def print_config_list():
     """Prints a list of installed OpenVPN configurations."""
-    lis = props.apps['openvpn'].app.configs.keys()
-    configs = {}
-
-    # Changes the list of configs to a dictionary
-    for item in lis:
-        configs[item] = []
+    lis = Application.get_app('openvpn').app.configs.keys()
+    configs = dict()
+    for c in lis:
+        configs[c] = []
 
     # Checks if configuration is installed for a given config_id
-    for config_id in configs:
-        for app in props.apps:
-            if not app == 'openvpn':
-                configs[config_id].append(
-                    {'app': app,
-                     'configured': props.apps[app].app.find_config(config_id)}
-                )
+    for app_name in Application.get_supported_apps():
+        app = Application.get_app(app_name)
+        if not app.strategy == 'openvpn' and app.configure:
+            configured_list = [c for c in lis if app.find_config(c)]
+            for c in configured_list:
+                configs[c].extend([app.strategy])
 
-    # Prints out the list
-    print("List of OpenVPN configurations")
+    if len(configs) > 0:
+        # Prints out the list
+        print("List of OpenVPN configurations")
+    else:
+        print("No OpenVPN configurations found!")
+
     for c in sorted(configs):
-        config = configs[c]
         dis = ''
-        for app in config:
-            if app['configured']:
-                dis += '[' + app['app'] + ']'
+        for app in configs[c]:
+            dis += '[' + app + ']'
         print('   %s %s' % (c, dis))
     sys.exit()
 
@@ -81,7 +82,10 @@ def run():
     menu()
 
     # Checks to see which supported applications are installed
-    props.check_installed()
+
+    props.apps = Application.check_apps()
+
+    properties.parse_conf_file()
 
     if props.list:
         print_config_list()
@@ -94,35 +98,38 @@ def run():
     # If "-e" option was given, then make sure to set that application as 'False'
     # to keep from having it configured and cause errors.
     if props.exclude:
-        for p in props.exclude:
-            props.progs[p] = False
+        for e in props.exclude:
+            app = Application.get_app(e)
+            if app and not app.strategy == 'openvpn':
+                app.configure = False
 
     # Holds custom configuration list if any "HOSTS" were passed on the command line.
     custom_configs = {}
 
     # Shortcut for the openvpn app object
-    openvpn = props.apps['openvpn']
+    openvpn = props.openvpn.app
 
     # Complies a list of custom configs
-    if props.host:
-        for config_id in props.host:
-            custom_configs[config_id] = openvpn.app.configs[config_id]
+    if props.hosts:
+        for config_id in props.hosts:
+            custom_configs[config_id.strip()] = openvpn.configs[config_id.strip()]
 
     # Replaces OpenVPN complete set of configs with our custom set
     if custom_configs:
-        openvpn.app.configs = custom_configs
+        openvpn.configs = custom_configs
 
     # if "-a" was given, then we need to configure each OpenVPN for our supported application,
     # else remove all configurations for supported applications other then OpenVPN.
     if props.configure:
-        for config in openvpn.app.configs:
-            config_id, filename = openvpn.app.configs[config]
+        for config in openvpn.configs:
+            config_id, filename = openvpn.configs[config]
 
-            if props.configure:
-                for app in props.apps.keys():
-                    if props.progs[app] and not app == 'openvpn':
-                        props.apps[app].config(config_id, filename)
+            for app_name in Application.get_supported_apps():
+                app = Application.get_app(app_name)
+                if not app.strategy == 'openvpn' and app.configure:
+                    app.config(config_id, filename)
     else:
-        for app in props.apps.keys():
-            if not app == 'openvpn':  # We don't want to delete OpenVPN files!
-                props.apps[app].remove_configs()
+        for app_name in Application.get_supported_apps():
+            app = Application.get_app(app_name)
+            if not app.strategy == 'openvpn':  # We don't want to delete OpenVPN files!
+                app.remove_configs()

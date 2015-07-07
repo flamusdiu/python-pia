@@ -16,10 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pathlib
-
-from pia.utils import has_proper_permissions
-from pia.applications.Application import Application
+from configparser import ConfigParser
+from pia.applications import Application
 
 
 class Props(object):
@@ -31,55 +29,79 @@ class Props(object):
         apps: dictionary of application objects that will be configured
     """
     _login_config = '/etc/private-internet-access/login.conf'
-    _progs = {'cm': False, 'nm': False, 'openvpn': False}
-    _apps = dict()
+    _conf_file = '/etc/private-internet-access/pia.conf'
+
+    def __init__(self):
+        self._exclude_apps = None
+
+    @property
+    def exclude_apps(self):
+        """A list of applications not to configure"""
+        return self._exclude_apps
+
+    @exclude_apps.setter
+    def exclude_apps(self, exclude_apps):
+        """Assigns the list of applications not to configure"""
+        self._exclude_apps = exclude_apps
+
+    @property
+    def conf_file(self):
+        return self._conf_file
 
     @property
     def login_config(self):
         """path to where VPN login credentials are stored"""
         return self._login_config
 
-    @property
-    def progs(self):
-        """list of supported programs"""
-        return self._progs
 
-    @property
-    def apps(self):
-        """dictionary of application objects that will be configured"""
-        return self._apps
+class _Parser(object):
+    """attributes may need additional manipulation"""
 
-    def check_installed(self):
-        """Check which applications are installed.
-
-        Calls is_installed() on each app object
+    def __init__(self, section):
+        """section to retun all options on, formatted as an object
+        transforms all comma-delimited options to lists
+        comma-delimited lists with colons are transformed to dicts
+        dicts will have values expressed as lists, no matter the length
         """
-        for p in self.progs.keys():
-            self.apps[p] = Application(p)
-            self.progs[p] = self.apps[p].is_installed()
+        c = ConfigParser()
+        c.read(props.conf_file)
 
-            if not self.progs[p]:
-                self.apps.pop(p)
+        self.section_name = section
 
-    @classmethod
-    def get_login_credentials(cls):
-        """Loads login credentials from file
+        self.__dict__.update({k: v for k, v in c.items(section)})
 
-        Returns:
-            A list containing username and password for login service.
-        """
-        if not has_proper_permissions(props.login_config):
-            print('ERROR: ' + props.login_config + ' must be owned by root and not world readable!')
-            exit(1)
+        # transform all ',' into lists, all ':' into dicts
+        for key, value in self.__dict__.items():
+            if value.find(':') > 0:
+                # dict
+                values = value.split(',')
+                dicts = [{k: v} for k, v in [d.split(':') for d in values]]
+                merged = {}
+                for d in dicts:
+                    for k, v in d.items():
+                        merged.setdefault(k, []).append(v)
+                self.__dict__[key] = merged
+            elif value.find(',') > 0:
+                # list
+                self.__dict__[key] = value.split(',')
+            else:
+                self.__dict__[key] = [value]
 
-        p = pathlib.Path(props.login_config)
-        try:
-            # Opens login.conf and reads login and passwords from file
-            with p.open() as f:
-                content = f.read().splitlines()
-        except OSError:
-            return None
 
-        return list(filter(bool,content))
+def parse_conf_file():
+    """Parses configure file 'pia.conf' using the Parser Class"""
+    pia_section = _Parser("pia")
+    configure_section = _Parser("configure")
+
+    if pia_section.openvpn_auto_login:
+        Application.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
+
+    if configure_section.apps:
+        for app in configure_section.apps:
+            Application.set_option(getattr(props, app), configure=True)
+
+    if configure_section.hosts:
+        props.hosts = configure_section.hosts
+
 
 props = Props()  # creates global property object
