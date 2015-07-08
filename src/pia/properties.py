@@ -30,6 +30,7 @@ class Props(object):
     """
     _login_config = '/etc/private-internet-access/login.conf'
     _conf_file = '/etc/private-internet-access/pia.conf'
+    _hosts = []
 
     def __init__(self):
         self._exclude_apps = None
@@ -53,6 +54,13 @@ class Props(object):
         """path to where VPN login credentials are stored"""
         return self._login_config
 
+    @property
+    def hosts(self):
+        return self._hosts
+
+    @hosts.setter
+    def hosts(self, value):
+        self._hosts = value
 
 class _Parser(object):
     """attributes may need additional manipulation"""

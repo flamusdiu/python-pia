@@ -15,38 +15,42 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import OrderedDict
 
 import os
-import argparse
-from pprint import pprint
 import sys
 
-from pia import properties
+from pia import properties, __VERSION__
 from pia.applications import Application
 from pia.properties import props
+from pia.docopt import docopt
 
 
-def menu():
-    """Command line menu configuration."""
+def commandline_interface():
+    doc = """
+Usage: pia (-a | -r) [-v] [-e=STRATEGY...] [HOST... ]
+       pia -l
+       pia -h | --help
+       pia --version
 
-    # All options are stored globally in 'props' var.
-    parser = argparse.ArgumentParser(
-        description='Configures PIA VPN Services for Connman, Network Manager, and OpenVPN')
+Configures PIA VPN Services for Connman, Network Manager, and OpenVPN
 
-    group = parser.add_mutually_exclusive_group(required=False)
-    group.add_argument('-a', '--auto-configure', dest='configure', action='store_true',
-                       help='Automatically generates configurations')
-    group.add_argument('-r', '--remove-configurations', dest='configure', action='store_false',
-                       help='Removes auto-generated configurations')
-    parser.add_argument('-l', '--list-configurations', dest='list', action='store_true',
-                        help='Lists known OpenVPN hosts')
-    parser.add_argument('-e', '--exclude', dest='exclude', choices=props.exclude_apps, action='append',
-                        help='Excludes modifying the configurations of the listed program. Maybe used more then once.')
-    parser.add_argument('hosts', nargs='*', help='A list of host names to configure')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                        help='Enables more verbose logging')
-    parser.add_argument('--version', action='version', version='%(prog)s 2.1')
-    parser.parse_args(namespace=props)
+Arguments:
+  HOST...                        A list of host names to configure
+
+Options:
+  -a, --auto-configure             Automatically generates configurations
+  -r, --remove-configurations      Removes auto-generated configurations
+  -l, --list-configurations        Lists known OpenVPN hosts
+  -e=STRATEGY, --exclude=STRATEGY  Excludes modifying the configurations of the listed
+                                   program. (Example: -e=cm,nm)
+  -v, --verbose                    Enables more verbose logging
+  -h, --help                       show this help message and exit
+  --version                        show program's version number and exit
+
+    """
+    args = docopt(doc, version=__VERSION__)
+    return args
 
 
 def print_config_list():
@@ -80,7 +84,7 @@ def print_config_list():
 
 def run():
     """Main function run from command line"""
-    menu()
+    props.commandline = commandline_interface()
 
     # Checks to see which supported applications are installed
 
@@ -88,7 +92,7 @@ def run():
 
     properties.parse_conf_file()
 
-    if props.list:
+    if props.commandline['--list-configurations']:
         print_config_list()
 
     # Make sure we are running as root
@@ -98,8 +102,8 @@ def run():
 
     # If "-e" option was given, then make sure to set that application as 'False'
     # to keep from having it configured and cause errors.
-    if props.exclude:
-        for e in props.exclude:
+    if props.commandline['--exclude']:
+        for e in props.exclude.split(','):
             app = Application.get_app(e)
             if app and not app.strategy == 'openvpn':
                 app.configure = False
@@ -110,10 +114,17 @@ def run():
     # Shortcut for the openvpn app object
     openvpn = props.openvpn.app
 
+    # Gets list of Hosts input from commandline
+    if props.commandline['HOST']:
+        props.hosts.extend(props.commandline['HOST'])
+
+    # Removes any duplicate names
+    props.hosts = list(set([h.strip() for h in props.hosts]))
+
     # Complies a list of custom configs
-    if props.hosts:
+    if len(props.hosts) > 0:
         for config_id in props.hosts:
-            custom_configs[config_id.strip()] = openvpn.configs[config_id.strip()]
+            custom_configs[config_id] = openvpn.configs[config_id]
 
     # Replaces OpenVPN complete set of configs with our custom set
     if custom_configs:
@@ -121,7 +132,7 @@ def run():
 
     # if "-a" was given, then we need to configure each OpenVPN for our supported application,
     # else remove all configurations for supported applications other then OpenVPN.
-    if props.configure:
+    if props.commandline['--auto-configure']:
         for config in openvpn.configs:
             config_id, filename = openvpn.configs[config]
 
@@ -129,7 +140,7 @@ def run():
                 app = Application.get_app(app_name)
                 if app.configure:
                     app.config(config_id, filename)
-    else:
+    elif props.commandline['--remove-configurations']:
         for app_name in Application.get_supported_apps():
             app = Application.get_app(app_name)
             if not app.strategy == 'openvpn':  # We don't want to delete OpenVPN files!

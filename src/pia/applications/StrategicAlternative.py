@@ -43,23 +43,23 @@ class StrategicAlternative(object):
         config_template: location of the application's config_template
 
     """
-    _conf_dir = ''
-    _command_bin = []
+    _CONF_DIR = ''
+    _COMMAND_BIN = []
 
     @property
     def command_bin(self):
         """list containing which files to check if the application is installed"""
-        return self._command_bin
+        return self._COMMAND_BIN
 
     @property
     def config_template(self):
         """location of the application's config_template"""
-        return self._config_template
+        return self._CONFIG_TEMPLATE
 
     @property
     def conf_dir(self):
         """directory to the application stores it's configurations"""
-        return self._conf_dir
+        return self._CONF_DIR
 
     @property
     def strategy(self):
@@ -68,7 +68,7 @@ class StrategicAlternative(object):
 
     def __init__(self, strategy=None):
         self._strategy = strategy
-        self._config_template = self.get_config_template()
+        self._CONFIG_TEMPLATE = self.get_config_template()
 
     def config(self, config_id, filename):
         """Implemented in the subclass to modify configuration template for each VPN endpoint"""

@@ -1,5 +1,11 @@
 Changelog
 =========
+2.3 (2015-07-08)
+----------------
+- Added docopt (https://github.com/docopt/docopt) support. No extra modules need to be installed.
+- Changed commandline parsing to use docopt.
+- other minor fixes
+
 2.2.1 (2015-07-07)
 ------------------
 - Oops. Goblins ran off with login credentials for OpenVPN configs.
@@ -15,7 +21,6 @@ Changelog
   switches). Options are parsed in the following order: Defaults > Conf File > Commandline switches
 
 - Refactored the way each supported application is called to simplify the code.
-
 
 2.1.1 (2015-07-05)
 ------------------

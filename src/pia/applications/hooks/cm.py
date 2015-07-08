@@ -30,8 +30,8 @@ class ApplicationStrategy(StrategicAlternative):
         command_bin: list containing which files to check if the application is installed
         conf_dir: directory to the application stores it's configurations
     """
-    _conf_dir = '/var/lib/connman-vpn'
-    _command_bin = ['/usr/bin/connmanctl']
+    _CONF_DIR = '/var/lib/connman-vpn'
+    _COMMAND_BIN = ['/usr/bin/connmanctl']
 
     def __init__(self):
         super().__init__('cm')

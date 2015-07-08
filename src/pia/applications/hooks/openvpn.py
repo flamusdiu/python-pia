@@ -34,8 +34,8 @@ class ApplicationStrategy(StrategicAlternative):
         conf_dir: directory to the application stores it's configurations
         configs: the list of openVPN configurations to modify
     """
-    _command_bin = ['/usr/bin/openvpn']
-    _conf_dir = '/etc/openvpn'
+    _COMMAND_BIN = ['/usr/bin/openvpn']
+    _CONF_DIR = '/etc/openvpn'
     _configs = {}
 
     @property
