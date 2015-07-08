@@ -38,7 +38,7 @@ class ApplicationStrategy(StrategicAlternative):
     def __init__(self):
         super().__init__('nm')
 
-    def config(self, config_id, filename, enable=None):
+    def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
 
         NetworkManager requires VPN credentials in its configuration files. So, those are

@@ -70,7 +70,7 @@ class StrategicAlternative(object):
         self._strategy = strategy
         self._config_template = self.get_config_template()
 
-    def config(self, config_id, filename, enable):
+    def config(self, config_id, filename):
         """Implemented in the subclass to modify configuration template for each VPN endpoint"""
         pass
 

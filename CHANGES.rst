@@ -1,5 +1,11 @@
 Changelog
 =========
+2.2.1 (2015-07-07)
+------------------
+- Oops. Goblins ran off with login credentials for OpenVPN configs.
+  I caught the goblins and returned the OpenVPN configs for auto-login to work.
+- Minor bug fixes.
+
 2.2 (2015-07-07)
 ----------------
 - Added ability to add a configuration file. It must be in '/etc/private-internet-access-vpn' and

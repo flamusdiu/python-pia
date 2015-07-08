@@ -51,7 +51,7 @@ class ApplicationStrategy(StrategicAlternative):
         super().__init__('openvpn')
         self.get_configs()
 
-    def config(self, config_id, filename, enable=True):
+    def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
 
         Args:
@@ -62,7 +62,6 @@ class ApplicationStrategy(StrategicAlternative):
         Raises:
             OSError: problems with reading or writing configuration files
         """
-        print(filename)
         p = pathlib.Path(filename)
         content = ''
 
@@ -73,10 +72,8 @@ class ApplicationStrategy(StrategicAlternative):
             print('Cannot access ' + config_id + '.')
             exit(1)
 
-        if enable:
-            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + pia.properties.props.login_config, content)
-        else:
-            content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
+        content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + pia.properties.props.login_config, content)
+        # content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
 
         try:
             with open(filename, "w") as f:

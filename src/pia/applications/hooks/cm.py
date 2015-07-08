@@ -36,7 +36,7 @@ class ApplicationStrategy(StrategicAlternative):
     def __init__(self):
         super().__init__('cm')
 
-    def config(self, config_id, filename, enable=None):
+    def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
 
         Args:

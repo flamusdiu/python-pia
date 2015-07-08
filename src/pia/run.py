@@ -18,6 +18,7 @@
 
 import os
 import argparse
+from pprint import pprint
 import sys
 
 from pia import properties
@@ -126,7 +127,7 @@ def run():
 
             for app_name in Application.get_supported_apps():
                 app = Application.get_app(app_name)
-                if not app.strategy == 'openvpn' and app.configure:
+                if app.configure:
                     app.config(config_id, filename)
     else:
         for app_name in Application.get_supported_apps():
