@@ -56,7 +56,7 @@ class _Parser(object):
     """attributes may need additional manipulation"""
 
     def __init__(self, section):
-        """section to retun all options on, formatted as an object
+        """section to return all options on, formatted as an object
         transforms all comma-delimited options to lists
         comma-delimited lists with colons are transformed to dicts
         dicts will have values expressed as lists, no matter the length
@@ -91,14 +91,14 @@ def parse_conf_file():
     pia_section = _Parser("pia")
     configure_section = _Parser("configure")
 
-    if pia_section.openvpn_auto_login:
+    if getattr(pia_section, "openvpn_auto_login", None):
         Application.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
 
-    if configure_section.apps:
+    if getattr(configure_section, "apps", None):
         for app in configure_section.apps:
             Application.set_option(getattr(props, app), configure=True)
 
-    if configure_section.hosts:
+    if getattr(configure_section, "hosts", None):
         props.hosts = configure_section.hosts
 
 
