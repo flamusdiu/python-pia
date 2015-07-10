@@ -70,9 +70,10 @@ class Application(object):
         """
         self.app.config(config_id, filename)
 
-    def remove_configs(self):
-        """Removes all configurations for a strategy"""
-        self.app.remove_configs()
+    def remove_configs(self, hosts):
+        """Removes VPN configurations for a strategy"""
+
+        self.app.remove_configs(self.app.conf_dir, hosts)
 
     def is_installed(self):
         """Checks to see if application for a strategy is installed"""

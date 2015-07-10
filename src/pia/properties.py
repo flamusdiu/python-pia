@@ -36,16 +36,6 @@ class Props(object):
         self._exclude_apps = None
 
     @property
-    def exclude_apps(self):
-        """A list of applications not to configure"""
-        return self._exclude_apps
-
-    @exclude_apps.setter
-    def exclude_apps(self, exclude_apps):
-        """Assigns the list of applications not to configure"""
-        self._exclude_apps = exclude_apps
-
-    @property
     def conf_file(self):
         return self._conf_file
 

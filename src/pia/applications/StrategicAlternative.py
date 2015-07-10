@@ -17,6 +17,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import re
 from pia.utils import multiple_replace
 from pkg_resources import resource_string
 
@@ -66,7 +67,7 @@ class StrategicAlternative(object):
         """name of which strategy created this class"""
         return self._strategy
 
-    def __init__(self, strategy=None):
+    def __init__(self, strategy):
         self._strategy = strategy
         self._CONFIG_TEMPLATE = self.get_config_template()
 
@@ -74,14 +75,25 @@ class StrategicAlternative(object):
         """Implemented in the subclass to modify configuration template for each VPN endpoint"""
         pass
 
-    def remove_configs(self):
+    @staticmethod
+    def remove_configs(conf_dir, hosts=None):
         """Removes all configurations for a strategy"""
         try:
-            for f in os.listdir(self.conf_dir):
-                path = os.path.join(self.conf_dir, f)
-                os.remove(path)
-        except OSError:
-            pass
+            cdir = os.listdir(conf_dir)
+        except FileNotFoundError:
+            cdir = None
+
+        if cdir:
+            if hosts:
+                regex = re.compile("(%s)" % "|".join(map(re.escape, hosts)))
+                cdir = [d for d in cdir if regex.match(d)]
+
+            try:
+                for f in cdir:
+                    path = os.path.join(conf_dir, f)
+                    os.remove(path)
+            except OSError:
+                pass
 
     def update_config(self, re_dict, conf):
         """Modifies configuration file with dictionary

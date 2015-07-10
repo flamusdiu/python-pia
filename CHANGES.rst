@@ -1,5 +1,11 @@
 Changelog
 =========
+2.4 (2015-07-09)
+----------------
+- Added an option to '-r' to remove only specific configurations. It will remove the configuration from
+  all applications.
+- Other bug fixes and refactoring.
+
 2.3 (2015-07-08)
 ----------------
 - Added docopt (https://github.com/docopt/docopt) support. No extra modules need to be installed.

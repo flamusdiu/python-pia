@@ -15,7 +15,6 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import codecs
 import os
 import re
 import stat
@@ -41,6 +40,7 @@ def multiple_replace(dictionary, text):
 
     # For each match, look-up corresponding value in dictionary
     return regex.sub(lambda mo: dictionary[mo.string[mo.start():mo.end()]], text)
+
 
 def get_login_credentials(login_config):
     """Loads login credentials from file

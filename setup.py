@@ -34,7 +34,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='pia',
 
-    version='2.2.1',
+    version='2.4',
 
     description='Private Internet Access Auto Configuration',
     long_description=long_description,

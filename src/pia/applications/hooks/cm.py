@@ -20,7 +20,7 @@ import re
 import os
 
 from pia.applications.StrategicAlternative import StrategicAlternative
-from pia.applications.hooks.openvpn import ApplicationStrategy as openVPN
+from pia.applications.hooks import openvpn
 
 
 class ApplicationStrategy(StrategicAlternative):
@@ -48,7 +48,7 @@ class ApplicationStrategy(StrategicAlternative):
         # Directory of replacement values for connman's configuration files
         re_dict = {"##id##": config_id,
                    "##filename##": filename,
-                   "##remote##": openVPN.get_remote_address(filename)}
+                   "##remote##": openvpn.get_remote_address(filename)}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"

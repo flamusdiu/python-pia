@@ -15,11 +15,13 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import namedtuple
 
 import pathlib
 import glob
 import re
 import pia
+
 from pia.applications.StrategicAlternative import StrategicAlternative
 
 
@@ -36,7 +38,6 @@ class ApplicationStrategy(StrategicAlternative):
     """
     _COMMAND_BIN = ['/usr/bin/openvpn']
     _CONF_DIR = '/etc/openvpn'
-    _configs = {}
 
     @property
     def configs(self):
@@ -49,7 +50,7 @@ class ApplicationStrategy(StrategicAlternative):
 
     def __init__(self):
         super().__init__('openvpn')
-        self.get_configs()
+        self._configs = self.get_configs()
 
     def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
@@ -84,37 +85,39 @@ class ApplicationStrategy(StrategicAlternative):
 
     def get_configs(self):
         """Gets the list of configuration files to be modified"""
+
+        config = namedtuple('Config', 'name, conf')
         for filename in glob.glob(self.conf_dir + '/*.conf'):
-            config_id = re.sub('_', ' ', re.match(r"^/(.*/)*(.+)\.conf$", filename).group(2))
-            self.configs[config_id] = [re.sub(' ', '_', config_id), filename]
+            c = {'name': re.sub('_', ' ', re.match(r"^/(.*/)*(.+)\.conf$", filename).group(2)),
+                 'conf': filename}
+            var_name = re.sub(' ', '_', re.match(r"^/(.*/)*(.+)\.conf$", filename).group(2))
+            self.__dict__[var_name] = config(**c)
 
-    def remove_configs(self):
-        """Not implemented for OpenVPN. We don't want to delete installed configs."""
-        raise NotImplementedError
-
-    @staticmethod
-    def get_remote_address(config):
-        """Finds the remote server host/ip address
-
-        Args:
-            config: string with the full path to configuration file
-
-        Returns:
-            Returns the host or ip address in the OpenVPN configuration file
-
-        Raises:
-            OSError: problems reading configuration file
-
-        """
-        p = pathlib.Path(config)
-        try:
-            with p.open() as f:
-                contents = f.read()
-        except OSError:
-            return None
-
-        return ''.join(re.findall("(?:remote.)(.*)(?:.\d{4})", contents))
+        return [i for i, j in self.__dict__.items() if type(self.__dict__[i]).__name__ == 'Config']
 
     def find_config(self, config_id):
         """Not implemented for OpenVPN. No need to search for a configuration."""
         raise NotImplementedError
+
+
+def get_remote_address(config):
+    """Finds the remote server host/ip address
+
+    Args:
+        config: string with the full path to configuration file
+
+    Returns:
+        Returns the host or ip address in the OpenVPN configuration file
+
+    Raises:
+        OSError: problems reading configuration file
+
+    """
+    p = pathlib.Path(config)
+    try:
+        with p.open() as f:
+            contents = f.read()
+    except OSError:
+        return None
+
+    return ''.join(re.findall("(?:remote.)(.*)(?:.\d{4})", contents))

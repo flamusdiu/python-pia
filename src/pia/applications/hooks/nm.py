@@ -21,7 +21,7 @@ import os
 
 import pia
 from pia.applications.StrategicAlternative import StrategicAlternative
-from pia.applications.hooks.openvpn import ApplicationStrategy as openVPN
+from pia.applications.hooks import openvpn
 from pia.utils import get_login_credentials
 
 
@@ -32,8 +32,8 @@ class ApplicationStrategy(StrategicAlternative):
         command_bin: list containing which files to check if the application is installed
         conf_dir: directory to the application stores it's configurations
     """
-    _conf_dir = '/etc/NetworkManager/system-connections'
-    _command_bin = ['/usr/bin/nmcli', '/usr/lib/networkmanager/nm-openvpn-service']
+    _CONF_DIR = '/etc/NetworkManager/system-connections'
+    _COMMAND_BIN = ['/usr/bin/nmcli', '/usr/lib/networkmanager/nm-openvpn-service']
 
     def __init__(self):
         super().__init__('nm')
@@ -58,7 +58,7 @@ class ApplicationStrategy(StrategicAlternative):
                    "##password##": password,
                    "##id##": config_id,
                    "##uuid##": str(uuid4()),
-                   "##remote##": openVPN.get_remote_address(filename)}
+                   "##remote##": openvpn.get_remote_address(filename)}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + config_id
