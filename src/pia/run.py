@@ -21,12 +21,12 @@ import sys
 import re
 
 from pia import properties, __version__
-from pia.applications import Application
+from pia.applications import appstrategy
 from pia.properties import props
 from pia.docopt import docopt
 
 # Checks to see which supported applications are installed
-props.apps = Application.check_apps()
+props.apps = appstrategy.check_apps()
 
 # Shortcut for the openvpn app object
 openvpn = props.openvpn.app
@@ -35,12 +35,8 @@ openvpn = props.openvpn.app
 def run():
     """Main function run from command line"""
     props.commandline = commandline_interface()
-    tmp_dict = dict([(re.sub('-', '_', x[2:].strip()), props.commandline[x])
-                     for x in props.commandline if not x == 'HOST']).copy()
-    tmp_dict.update({'HOST': props.commandline['HOST']})
-    props.commandline = tmp_dict
 
-    if props.commandline['list_configurations']:
+    if props.commandline.list_configurations:
         list_configurations()
 
     # Make sure we are running as root
@@ -50,46 +46,56 @@ def run():
 
     properties.parse_conf_file()
 
-    if props.commandline['HOST'] or props.hosts:
+    if props.commandline.hosts or props.hosts:
         custom_hosts()
 
-    try:
-        [globals()[name]() for name in props.commandline if not name == 'HOST' and props.commandline[name]]
-    except KeyError as e:
-        docopt(globals()['commandline_interface'].__doc__, argv=['-h'], version=__version__)
+    # try:
+    [globals()[k]() for k, v in props.commandline.__dict__.items() if not k == 'hosts' and getattr(props.commandline, k, None)]
+    # except KeyError:
+    #    docopt(globals()['commandline_interface'].__doc__, argv=['-h'], version=__version__)
 
 
 def exclude():
-    ex = props.commandline['exclude']
+    """Excludes applications from being configured."""
+    ex = props.commandline.exclude
     for e in ex.split():
-        app = Application.get_app(e)
+        app = appstrategy.get_app(e)
         if app and not app.strategy == 'openvpn':
             app.configure = False
 
 
 def custom_hosts():
+    """Creates custom hosts list
+
+    The host list is built from either commandline (by listing them after all other options)
+    or in the config file in '/etc/private-internet-access-vpn' and combines the lists
+    together. This then replaces the openvpn config list on which hosts to modify.
+
+    """
     custom_configs = props.hosts or list()
     # Gets list of Hosts input from commandline
-    if props.commandline['auto_configure']:
-        custom_configs.extend(props.commandline['HOST'])
+    if props.commandline.auto_configure:
+        custom_configs.extend(props.commandline.hosts)
     else:
-        custom_configs = props.commandline['HOST']
+        custom_configs = props.commandline.hosts
 
     # Removes any duplicate names
     openvpn.configs = list(set([re.sub(' ', '_', h.strip()) for h in custom_configs]))
 
 
 def remove_configurations():
-    for app_name in Application.get_supported_apps():
-        app = Application.get_app(app_name)
+    """Removes configurations based on openvpn.configs"""
+    for app_name in appstrategy.get_supported_apps():
+        app = appstrategy.get_app(app_name)
         if not app.strategy == 'openvpn':  # We don't want to delete OpenVPN files!
             app.remove_configs(openvpn.configs)
 
 
 def auto_configure():
+    """Auto configures applications"""
     for config in openvpn.configs:
-        for app_name in Application.get_supported_apps():
-            app = Application.get_app(app_name)
+        for app_name in appstrategy.get_supported_apps():
+            app = appstrategy.get_app(app_name)
             if app.configure:
                 app.config(*getattr(openvpn, config))
 
@@ -118,20 +124,45 @@ Options:
   --version                            show program's version number and exit
 
     """
-    args = docopt(commandline_interface.__doc__, version=__version__)
-    return args
+
+    class CommandLineOptions(object):
+        def __repr__(self):
+            opts = {}
+            for opt in self.__dict__.items():
+                opts.update({opt[0]: opt[1] or None})
+
+            return '<%s %s>' % (self.__class__.__name__, opts)
+
+        def __setattr__(self, key, value):
+            # Substitute option names: --an-option-name for an_option_name
+            import re
+            key = re.sub(r'^__', "", re.sub(r'-', "_", key))
+
+            object.__setattr__(self, key, value)
+
+        def __getattr__(self, item):
+            return self.__dict__[item]
+
+    cli_options = CommandLineOptions()
+
+    options = docopt(commandline_interface.__doc__, version=__version__)
+
+    [setattr(cli_options, opt, options[opt]) for opt in options if not opt == 'HOST']
+    setattr(cli_options, 'hosts', options['HOST'])
+
+    return cli_options
 
 
 def list_configurations():
     """Prints a list of installed OpenVPN configurations."""
-    lis = Application.get_app('openvpn').app.configs
+    lis = appstrategy.get_app('openvpn').app.configs
     configs = dict()
     for c in lis:
         configs[c] = []
 
     # Checks if configuration is installed for a given config_id
-    for app_name in Application.get_supported_apps():
-        app = Application.get_app(app_name)
+    for app_name in appstrategy.get_supported_apps():
+        app = appstrategy.get_app(app_name)
         if not app.strategy == 'openvpn' and app.configure:
             #  configured_list = [c for c in lis if app.find_config(c)]
             [configs[c].extend([app.strategy]) for c in lis if app.find_config(c)]
@@ -143,7 +174,7 @@ def list_configurations():
             dis = ''
             for app in configs[c]:
                 dis += '[' + app + ']'
-            print('   %s %s' % (re.sub('_',' ',c), dis))
+            print('   %s %s' % (re.sub('_', ' ', c), dis))
     else:
         print("No OpenVPN configurations found!")
     sys.exit()

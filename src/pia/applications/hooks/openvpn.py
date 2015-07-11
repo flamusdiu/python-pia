@@ -22,7 +22,7 @@ import glob
 import re
 import pia
 
-from pia.applications.StrategicAlternative import StrategicAlternative
+from pia.applications.appstrategy import StrategicAlternative
 
 
 class ApplicationStrategy(StrategicAlternative):

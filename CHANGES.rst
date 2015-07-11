@@ -1,5 +1,10 @@
 Changelog
 =========
+2.4.1 (2015-07-10)
+----------------
+- Added doc statements for most functions
+- More bug fixes + code refactoring
+
 2.4 (2015-07-09)
 ----------------
 - Added an option to '-r' to remove only specific configurations. It will remove the configuration from

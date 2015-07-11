@@ -20,7 +20,7 @@ from uuid import uuid4
 import os
 
 import pia
-from pia.applications.StrategicAlternative import StrategicAlternative
+from pia.applications.appstrategy import StrategicAlternative
 from pia.applications.hooks import openvpn
 from pia.utils import get_login_credentials
 

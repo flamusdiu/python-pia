@@ -17,7 +17,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from configparser import ConfigParser
-from pia.applications import Application
+from pia.applications import appstrategy
 
 
 class Props(object):
@@ -35,6 +35,9 @@ class Props(object):
     def __init__(self):
         self._exclude_apps = None
 
+    def __repr__(self):
+        return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
+
     @property
     def conf_file(self):
         return self._conf_file
@@ -51,6 +54,7 @@ class Props(object):
     @hosts.setter
     def hosts(self, value):
         self._hosts = value
+
 
 class _Parser(object):
     """attributes may need additional manipulation"""
@@ -85,18 +89,22 @@ class _Parser(object):
             else:
                 self.__dict__[key] = [value]
 
+    def __repr__(self):
+        return '<%s %s:%s>' % (self.__class__.__name__, 'section', self.__dict__['section'])
+
 
 def parse_conf_file():
     """Parses configure file 'pia.conf' using the Parser Class"""
+
     pia_section = _Parser("pia")
     configure_section = _Parser("configure")
 
     if getattr(pia_section, "openvpn_auto_login", None):
-        Application.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
+        appstrategy.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
 
     if getattr(configure_section, "apps", None):
-        for app in configure_section.apps:
-            Application.set_option(getattr(props, app), configure=True)
+        for app_name in configure_section.apps:
+            appstrategy.set_option(getattr(props, app_name), configure=True)
 
     if getattr(configure_section, "hosts", None):
         props.hosts = configure_section.hosts

@@ -19,7 +19,7 @@
 import re
 import os
 
-from pia.applications.StrategicAlternative import StrategicAlternative
+from pia.applications.appstrategy import StrategicAlternative
 from pia.applications.hooks import openvpn
 
 
@@ -43,6 +43,7 @@ class ApplicationStrategy(StrategicAlternative):
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
             filename: the filename of where to store the finished configuration file
             enable: NOT USED
+
         """
 
         # Directory of replacement values for connman's configuration files
@@ -64,6 +65,7 @@ class ApplicationStrategy(StrategicAlternative):
 
         Returns:
             Returns bool depending on if the configuration is already installed
+
         """
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"
 
