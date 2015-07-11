@@ -99,14 +99,14 @@ def parse_conf_file():
     pia_section = _Parser("pia")
     configure_section = _Parser("configure")
 
-    if getattr(pia_section, "openvpn_auto_login", None):
+    if getattr(pia_section, "openvpn_auto_login"):
         appstrategy.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
 
-    if getattr(configure_section, "apps", None):
+    if getattr(configure_section, "apps"):
         for app_name in configure_section.apps:
             appstrategy.set_option(getattr(props, app_name), configure=True)
 
-    if getattr(configure_section, "hosts", None):
+    if getattr(configure_section, "hosts"):
         props.hosts = configure_section.hosts
 
 
