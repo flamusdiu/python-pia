@@ -22,6 +22,7 @@ import os
 import pia
 from pia.applications.appstrategy import StrategicAlternative
 from pia.applications.hooks import openvpn
+from pia.properties import props
 from pia.utils import get_login_credentials
 
 
@@ -51,7 +52,7 @@ class ApplicationStrategy(StrategicAlternative):
         """
 
         # Gets VPN username and password
-        username, password = get_login_credentials(pia.properties.props.login_config)
+        username, password = get_login_credentials(props.login_config)
 
         # Directory of replacement values for NetworkManager's configuration files
         re_dict = {"##username##": username,
