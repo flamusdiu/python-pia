@@ -15,21 +15,25 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import logging
 import os
 import sys
 import re
 
-from pia import properties, __version__
+from pia import __version__
+from pia.conf import properties
 from pia.applications import appstrategy
-from pia.properties import props
+from pia.conf.properties import props
 from pia.docopt import docopt
+from pia.conf import settings
 
 # Checks to see which supported applications are installed
 props.apps = appstrategy.check_apps()
 
 # Shortcut for the openvpn app object
 openvpn = props.openvpn.app
+
+logger = logging.getLogger(__name__)
 
 
 def run():
@@ -41,7 +45,8 @@ def run():
 
     # Make sure we are running as root
     if os.getuid() > 0:
-        print('ERROR: You must run this script with administrative privileges!')
+        props.debug = True
+        logger.error('You must run this script with administrative privileges!')
         sys.exit(1)
 
     properties.parse_conf_file()
@@ -49,10 +54,11 @@ def run():
     if props.commandline.hosts or props.hosts:
         custom_hosts()
 
-    # try:
-    [globals()[k]() for k, v in props.commandline.__dict__.items() if not k == 'hosts' and getattr(props.commandline, k, None)]
-    # except KeyError:
-    #    docopt(globals()['commandline_interface'].__doc__, argv=['-h'], version=__version__)
+    try:
+        [globals()[k]() for k, v in props.commandline.__dict__.items() if
+            not k == 'hosts' and getattr(props.commandline, k, None)]
+    except KeyError:
+        docopt(globals()['commandline_interface'].__doc__, argv=['-h'], version=__version__)
 
 
 def exclude():
@@ -102,9 +108,9 @@ def auto_configure():
 
 def commandline_interface():
     """
-Usage: pia -a [-e STRATEGIES] [HOST [HOST]... ]
-       pia -r [HOST [HOST]... ]
-       pia -l
+Usage: pia -a [-d] [-e STRATEGIES] [HOST [HOST]... ]
+       pia -r [-d] [HOST [HOST]... ]
+       pia -l [-d]
        pia -h | --help
        pia --version
 
@@ -120,6 +126,7 @@ Options:
   -l, --list-configurations            Lists known OpenVPN hosts
   -e STRATEGIES, --exclude STRATEGIES  Excludes modifying the configurations of the listed
                                        program. (Example: -e cm,nm)
+  -d, --debug                          enables debug logging to console
   -h, --help                           show this help message and exit
   --version                            show program's version number and exit
 
@@ -134,11 +141,14 @@ Options:
             return '<%s %s>' % (self.__class__.__name__, opts)
 
         def __setattr__(self, key, value):
-            # Substitute option names: --an-option-name for an_option_name
-            import re
-            key = re.sub(r'^__', "", re.sub(r'-', "_", key))
+            if key == "HOST":
+                object.__setattr__(self, 'hosts', value)
+            else:
+                # Substitute option names: --an-option-name for an_option_name
+                import re
+                key = re.sub(r'^__', "", re.sub(r'-', "_", key))
 
-            object.__setattr__(self, key, value)
+                object.__setattr__(self, key, value)
 
         def __getattr__(self, item):
             return self.__dict__[item]
@@ -147,8 +157,7 @@ Options:
 
     options = docopt(commandline_interface.__doc__, version=__version__)
 
-    [setattr(cli_options, opt, options[opt]) for opt in options if not opt == 'HOST']
-    setattr(cli_options, 'hosts', options['HOST'])
+    [setattr(cli_options, opt, options[opt]) for opt in options]
 
     return cli_options
 
@@ -164,8 +173,10 @@ def list_configurations():
     for app_name in appstrategy.get_supported_apps():
         app = appstrategy.get_app(app_name)
         if not app.strategy == 'openvpn' and app.configure:
-            #  configured_list = [c for c in lis if app.find_config(c)]
-            [configs[c].extend([app.strategy]) for c in lis if app.find_config(c)]
+                for c in lis:
+                    if app.find_config(c):
+                        logger.debug('Configuring %s for %s' % (c, app.strategy))
+                        configs[c].extend([app.strategy])
 
     if len(configs) > 0:
         # Prints out the list
@@ -176,5 +187,9 @@ def list_configurations():
                 dis += '[' + app + ']'
             print('   %s %s' % (re.sub('_', ' ', c), dis))
     else:
-        print("No OpenVPN configurations found!")
+        logger.info("No OpenVPN configurations found!")
     sys.exit()
+
+
+def debug():
+    props.debug = True

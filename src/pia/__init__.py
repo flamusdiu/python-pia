@@ -17,6 +17,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = "2.4"
+__version__ = "2.4.5"
 
-from . import properties, utils, run
+from . import utils, run
+from pia.conf import properties
+from pia.utils.log import configure_logging
+
+configure_logging()

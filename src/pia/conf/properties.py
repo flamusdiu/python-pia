@@ -16,8 +16,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from configparser import ConfigParser
+import configparser
+import logging
+import logging.config
 from pia.applications import appstrategy
+from pia.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Props(object):
@@ -28,12 +33,13 @@ class Props(object):
         progs: list of supported programs
         apps: dictionary of application objects that will be configured
     """
-    _login_config = '/etc/private-internet-access/login.conf'
-    _conf_file = '/etc/private-internet-access/pia.conf'
     _hosts = []
 
     def __init__(self):
         self._exclude_apps = None
+        self._debug = settings.DEBUG
+        self._login_config = settings.LOGIN_CONFIG
+        self._conf_file = settings.PIA_CONFIG
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
@@ -55,6 +61,14 @@ class Props(object):
     def hosts(self, value):
         self._hosts = value
 
+    @property
+    def debug(self):
+        return self._debug
+
+    @debug.setter
+    def debug(self, value):
+        self._debug = value
+
 
 class _Parser(object):
     """attributes may need additional manipulation"""
@@ -65,7 +79,7 @@ class _Parser(object):
         comma-delimited lists with colons are transformed to dicts
         dicts will have values expressed as lists, no matter the length
         """
-        c = ConfigParser()
+        c = configparser.ConfigParser()
         c.read(props.conf_file)
 
         self.section_name = section
@@ -96,17 +110,27 @@ class _Parser(object):
 def parse_conf_file():
     """Parses configure file 'pia.conf' using the Parser Class"""
 
-    pia_section = _Parser("pia")
-    configure_section = _Parser("configure")
+    try:
+        pia_section = _Parser("pia")
+    except configparser.NoSectionError:
+        pia_section = None
+        logger.debug("Reading configuration file error. No %s" % 'pia')
+        pass
 
-    if getattr(pia_section, "openvpn_auto_login"):
+    try:
+        configure_section = _Parser("configure")
+    except configparser.NoSectionError:
+        configure_section = None
+        logger.debug("Reading configuration file error. No %s" % 'configure')
+
+    if pia_section and getattr(pia_section, "openvpn_auto_login"):
         appstrategy.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
 
-    if getattr(configure_section, "apps"):
+    if configure_section and getattr(configure_section, "apps"):
         for app_name in configure_section.apps:
             appstrategy.set_option(getattr(props, app_name), configure=True)
 
-    if getattr(configure_section, "hosts"):
+    if configure_section and getattr(configure_section, "hosts"):
         props.hosts = configure_section.hosts
 
 

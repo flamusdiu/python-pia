@@ -19,6 +19,9 @@ import os
 import re
 import stat
 import pathlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def has_proper_permissions(filepath):
@@ -49,7 +52,7 @@ def get_login_credentials(login_config):
         A list containing username and password for login service.
     """
     if not has_proper_permissions(login_config):
-        print('ERROR: ' + login_config + ' must be owned by root and not world readable!')
+        logger.error('%s must be owned by root and not world readable!' % login_config)
         exit(1)
 
     p = pathlib.Path(login_config)

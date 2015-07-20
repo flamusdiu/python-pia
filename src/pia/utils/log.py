@@ -15,5 +15,28 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
+import sys
+from logging.config import dictConfig
+from pia.conf import settings
 
-from . import cm, nm, openvpn
+from pia.conf.properties import props
+
+
+def configure_logging():
+    if not sys.warnoptions:
+        # Route warnings through python logging
+        logging.captureWarnings(True)
+
+    if settings.LOGGING:
+        dictConfig(settings.LOGGING)
+
+
+class RequireDebugFalse(logging.Filter):
+    def filter(self, record):
+        return not props.debug
+
+
+class RequireDebugTrue(logging.Filter):
+    def filter(self, record):
+        return props.debug

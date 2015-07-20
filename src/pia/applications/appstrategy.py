@@ -15,15 +15,19 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import inspect
+import logging
 import os
 import re
 import sys
-import pia.properties
-
-from pkg_resources import resource_listdir, resource_string
+import warnings
+import pia
 from importlib import import_module
-from pia.utils import multiple_replace
+from pia.conf import settings
+from pkg_resources import resource_listdir, resource_string
+from pia.utils.misc import multiple_replace
+
+logger = logging.getLogger(__name__)
 
 
 class Application(object):
@@ -108,7 +112,7 @@ def build_strategy(strategy):
         Application object with the name strategy
     """
     application = Application()
-    application.app = getattr(import_module('pia.applications.hooks.' + strategy), 'ApplicationStrategy')()
+    application.app = getattr(import_module('pia.applications.hooks'), 'ApplicationStrategy' + strategy.upper())()
 
     return application
 
@@ -135,10 +139,10 @@ def set_option(application, **kwargs):
             if application:
                 application.__dict__[opt] = kwargs[opt]
             else:
-                print('Cannot set opt: %s on a %s!' % (opt, type(application).__name__))
+                logger.warn('Cannot set opt: %s on a %s!' % (opt, type(application).__name__))
 
     for opt in bad_options:
-        print("Option %s is not unsupported." % opt)
+        logger.warn("Option %s is not unsupported." % opt)
 
 
 def get_app(app_key):
@@ -151,7 +155,7 @@ def get_app(app_key):
         Returns an application instance from the global properties object.
     """
     try:
-        app = getattr(pia.properties.props, app_key)
+        app = getattr(pia.conf.properties.props, app_key)
     except AttributeError:
         return None
     return app
@@ -171,7 +175,7 @@ def check_apps():
         a = build_strategy(app)
         a.configure = a.is_installed()
 
-        pia.properties.props.__dict__[app] = a
+        pia.conf.properties.props.__dict__[app] = a
 
 
 def get_supported_apps():
@@ -181,14 +185,18 @@ def get_supported_apps():
         A list of configured applications in a hooks directory
     """
     apps = list()
-
+    logger.debug("Application hooks found: %s" % [f[:-3] for f in resource_listdir(__name__, 'hooks')
+                                                  if not re.match(r'__[A-Za-z0-9]*__', f)])
     try:
-        for a in [f[:-3] for f in resource_listdir(__name__, 'hooks')
-                  if not re.match(r'__[A-Za-z0-9]*__', f)]:
-            apps.extend([a])
+        import_module('pia.applications.hooks')
     except OSError:
-        print("ERROR: Cannot read application hooks.")
+        settings.DEBUG = True
+        logger.error("Cannot read application hooks.")
         sys.exit(1)
+
+    tmp_apps = [n[0] for n in inspect.getmembers(sys.modules['pia.applications.hooks'], inspect.isclass)]
+    for n in tmp_apps:
+        apps.extend([a.lower() for a in re.findall('ApplicationStrategy([A-Za-z]*)', n) if a])
 
     return apps
 
@@ -302,13 +310,15 @@ class StrategicAlternative(object):
             with open(conf, "w") as c:
                 c.write(multiple_replace(re_dict, self.config_template))
         except OSError:
-            print("Cannot access " + conf)
+            warnings.warn("Cannot access %s." % conf)
 
         try:
+            logger.debug('Changing permission on %s.' % conf)
             os.chmod(conf, 0o600)  # Sets permissions to Read, Write, to Owner only.
             os.chown(conf, 0, 0)  # Sets ownership to root:root (uid 0).
+            logger.debug('Changing permission on %s was successful.' % conf)
         except OSError:
-            print("Cannot change permissions on " + conf)
+            warnings.warn("Cannot change permissions on %s." % conf)
 
     def get_config_template(self):
         """Loads the config template file.
@@ -323,6 +333,8 @@ class StrategicAlternative(object):
         try:
             return resource_string(__name__, 'template-configs/' + self.strategy + '.cfg').decode()
         except OSError:
+            if not self.strategy:
+                logger.warning("Cannot load template file: %s" % 'template-configs/' + self.strategy + '.cfg')
             return None
 
     def find_config(self, config_id):
