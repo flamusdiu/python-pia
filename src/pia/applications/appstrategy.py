@@ -185,16 +185,17 @@ def get_supported_apps():
         A list of configured applications in a hooks directory
     """
     apps = list()
-    logger.debug("Application hooks found: %s" % [f[:-3] for f in resource_listdir(__name__, 'hooks')
-                                                  if not re.match(r'__[A-Za-z0-9]*__', f)])
+
     try:
         import_module('pia.applications.hooks')
     except OSError:
-        settings.DEBUG = True
         logger.error("Cannot read application hooks.")
         sys.exit(1)
 
     tmp_apps = [n[0] for n in inspect.getmembers(sys.modules['pia.applications.hooks'], inspect.isclass)]
+
+    logger.debug("Application hooks found: %s" % tmp_apps)
+
     for n in tmp_apps:
         apps.extend([a.lower() for a in re.findall('ApplicationStrategy([A-Za-z]*)', n) if a])
 

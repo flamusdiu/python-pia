@@ -25,7 +25,6 @@ from pia.conf import properties
 from pia.applications import appstrategy
 from pia.conf.properties import props
 from pia.docopt import docopt
-from pia.conf import settings
 
 # Checks to see which supported applications are installed
 props.apps = appstrategy.check_apps()
@@ -38,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 def run():
     """Main function run from command line"""
+    logger.debug('Parsing commandline args...')
     props.commandline = commandline_interface()
 
     if props.commandline.list_configurations:

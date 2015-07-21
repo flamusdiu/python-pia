@@ -1,7 +1,19 @@
 Changelog
 =========
+2.4.6 (2015-07-21)
+------------------
+- Added some more logging code and disabled Debug (oops -- left it on).
+- Fixed a bug dealing with some of the logging code causing it to kill the script (Thanks @toppy!)
+
+2.4.5 (2015-07-20)
+------------------
+- Moved code around to better support some functions
+- Fixed a bug where an error would throw if the pia.conf was missing or didn't have all the configuration
+  section
+- Added logging (not completed yet). The "--debug" flag isn't nearly ready yet but will be soon.
+
 2.4.1 (2015-07-10)
-----------------
+------------------
 - Added doc statements for most functions
 - More bug fixes + code refactoring
 

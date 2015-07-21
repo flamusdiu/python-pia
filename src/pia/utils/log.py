@@ -17,7 +17,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import sys
-from logging.config import dictConfig
+import logging.config
 from pia.conf import settings
 
 from pia.conf.properties import props
@@ -29,7 +29,7 @@ def configure_logging():
         logging.captureWarnings(True)
 
     if settings.LOGGING:
-        dictConfig(settings.LOGGING)
+        logging.config.dictConfig(settings.LOGGING)
 
 
 class RequireDebugFalse(logging.Filter):

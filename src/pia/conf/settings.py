@@ -7,7 +7,7 @@ PIA_CONFIG = '/etc/private-internet-access/pia.conf'
 #
 # Debugging information
 #
-DEBUG = True
+DEBUG = False
 
 
 #
@@ -31,7 +31,7 @@ LOGGING = {
         'require_debug_true': {
             '()': 'pia.utils.log.RequireDebugTrue'
         }
-     },
+    },
     'handlers': {
         'null': {
             'class': 'logging.NullHandler',

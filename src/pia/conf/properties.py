@@ -17,12 +17,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import configparser
-import logging
-import logging.config
 from pia.applications import appstrategy
 from pia.conf import settings
-
-logger = logging.getLogger(__name__)
 
 
 class Props(object):
@@ -108,6 +104,10 @@ class _Parser(object):
 
 
 def parse_conf_file():
+    import logging
+
+    logger = logging.getLogger(__name__)
+    
     """Parses configure file 'pia.conf' using the Parser Class"""
 
     try:
