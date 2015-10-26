@@ -6,7 +6,7 @@ import re
 
 from uuid import uuid4
 from collections import namedtuple
-from pia.conf import settings
+from pia.conf import settings, properties
 from pia.utils.misc import get_login_credentials
 from pia.applications.appstrategy import StrategicAlternative
 
@@ -58,7 +58,9 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         except IOError:
             warnings.warn('Cannot access %s.' % config_id)
 
-        content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass ' + settings.LOGIN_CONFIG, content)
+        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
+        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d+)', '\g<1>' + properties.props.port, content)
+
         # content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
 
         try:
@@ -141,7 +143,8 @@ class ApplicationStrategyNM(StrategicAlternative):
                    "##password##": password,
                    "##id##": config_id,
                    "##uuid##": str(uuid4()),
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename)}
+                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
+                   "##port##": properties.props.port}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + config_id
@@ -189,7 +192,8 @@ class ApplicationStrategyCM(StrategicAlternative):
         # Directory of replacement values for connman's configuration files
         re_dict = {"##id##": config_id,
                    "##filename##": filename,
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename)}
+                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
+                   "##port##": properties.props.port}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"

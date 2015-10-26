@@ -37,7 +37,6 @@ def multiple_replace(dictionary, text):
     Returns:
         The modified text is returns on a single pass of the regular express.
     """
-
     # Create a regular expression  from the dictionary keys
     regex = re.compile("(%s)" % "|".join(map(re.escape, dictionary.keys())))
 

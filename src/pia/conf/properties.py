@@ -30,7 +30,10 @@ class Props(object):
         apps: dictionary of application objects that will be configured
     """
     _hosts = []
-
+    _port = ''
+    _default_port = '1194'
+    _conf_section = {}
+    
     def __init__(self):
         self._exclude_apps = None
         self._debug = settings.DEBUG
@@ -58,12 +61,32 @@ class Props(object):
         self._hosts = value
 
     @property
+    def port(self):
+        return self._port
+
+    @port.setter
+    def port(self, value):
+        self._port = value
+
+    @property
+    def default_port(self):
+        return self._default_port
+
+    @property
     def debug(self):
         return self._debug
 
     @debug.setter
     def debug(self, value):
         self._debug = value
+
+    @property
+    def conf_section(self):
+        return self._conf_section
+
+    @conf_section.setter
+    def conf_section(self, value):
+        self._conf_section = value
 
 
 class _Parser(object):
@@ -112,6 +135,8 @@ def parse_conf_file():
 
     try:
         pia_section = _Parser("pia")
+        props.conf_section['pia'] = pia_section
+
     except configparser.NoSectionError:
         pia_section = None
         logger.debug("Reading configuration file error. No %s" % 'pia')
@@ -119,19 +144,30 @@ def parse_conf_file():
 
     try:
         configure_section = _Parser("configure")
+        props.conf_section['configure'] = configure_section
     except configparser.NoSectionError:
         configure_section = None
         logger.debug("Reading configuration file error. No %s" % 'configure')
 
-    if pia_section and getattr(pia_section, "openvpn_auto_login"):
-        appstrategy.set_option(getattr(props, 'openvpn'), autologin=pia_section.openvpn_auto_login)
+    if pia_section:
+        appstrategy.set_option(getattr(props, 'openvpn'), autologin=getattr(pia_section, "openvpn_auto_login", False))
 
-    if configure_section and getattr(configure_section, "apps"):
-        for app_name in configure_section.apps:
+    if configure_section:
+        for app_name in getattr(configure_section, "apps", None):
             appstrategy.set_option(getattr(props, app_name), configure=True)
 
-    if configure_section and getattr(configure_section, "hosts"):
-        props.hosts = configure_section.hosts
+        props.hosts = getattr(configure_section, "hosts", None)
 
+        port = getattr(configure_section, "port", [props.default_port])[0]
+
+        if 1 <= int(port) <= 65535:
+            props.port = port
+        else:
+            logger.warnings('%s out of range (1-65535). Using default port %s' % (port, props.default_port))
+            props.port = props.default_port
+
+
+def reset_port_number():
+    props.port = props.default_port
 
 props = Props()  # creates global property object

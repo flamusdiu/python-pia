@@ -82,8 +82,6 @@ def custom_hosts():
     # Gets list of Hosts input from commandline
     if props.commandline.auto_configure:
         custom_configs.extend(props.commandline.hosts)
-    else:
-        custom_configs = props.commandline.hosts
 
     # Removes any duplicate names
     openvpn.configs = list(set([re.sub(' ', '_', h.strip()) for h in custom_configs]))
@@ -93,7 +91,11 @@ def remove_configurations():
     """Removes configurations based on openvpn.configs"""
     for app_name in appstrategy.get_supported_apps():
         app = appstrategy.get_app(app_name)
-        if not app.strategy == 'openvpn':  # We don't want to delete OpenVPN files!
+        if app.strategy == 'openvpn':
+            props.port = props.default_port
+            for config in openvpn.configs:
+                app.config(*getattr(openvpn, config))
+        else:  # We don't want to delete OpenVPN files!
             app.remove_configs(openvpn.configs)
 
 

@@ -143,7 +143,7 @@ def set_option(application, **kwargs):
 
     for opt in bad_options:
         logger.warn("Option %s is not unsupported." % opt)
-
+ 
 
 def get_app(app_key):
     """Gets the application object by name
@@ -154,11 +154,7 @@ def get_app(app_key):
     Returns:
         Returns an application instance from the global properties object.
     """
-    try:
-        app = getattr(pia.conf.properties.props, app_key)
-    except AttributeError:
-        return None
-    return app
+    return getattr(pia.conf.properties.props, app_key, None)
 
 
 def check_apps():
