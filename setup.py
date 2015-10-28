@@ -34,7 +34,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='pia',
 
-    version='2.4.6',
+    version='2.5',
 
     description='Private Internet Access Auto Configuration',
     long_description=long_description,
@@ -61,6 +61,7 @@ setup(
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5'
     ],
 
     keywords='openvpn vpn commandline',

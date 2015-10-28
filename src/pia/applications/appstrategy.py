@@ -24,7 +24,7 @@ import warnings
 import pia
 from importlib import import_module
 from pia.conf import settings
-from pkg_resources import resource_listdir, resource_string
+from pkg_resources import resource_string
 from pia.utils.misc import multiple_replace
 
 logger = logging.getLogger(__name__)

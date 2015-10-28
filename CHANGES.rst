@@ -1,5 +1,12 @@
 Changelog
 =========
+2.5 (2015-10-28)
+----------------
+- Added option to change port number and protocol of the distance gateway. Set in the configuration file
+  under '[configure]' by setting 'port = port#'. Valid port numbers are 80 (TCP), 443 (TCP), 110 (TCP),
+  53 (UDP), 8080 (UDP), 9201 (UDP). You do not need to specify the protocol since only one port number
+  is supported over a specific protocol. (Fixes Issue #3)
+
 2.4.6 (2015-07-21)
 ------------------
 - Added some more logging code and disabled Debug (oops -- left it on).

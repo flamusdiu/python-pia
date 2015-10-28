@@ -58,10 +58,13 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         except IOError:
             warnings.warn('Cannot access %s.' % config_id)
 
-        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
-        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d+)', '\g<1>' + properties.props.port, content)
 
-        # content = re.sub('(auth-user-pass)(?:.*)', 'auth-user-pass', content)
+        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
+        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port, content)
+
+        proto = "tcp-client" if properties.props.protocol == "TCP" else "udp"
+
+        content = re.sub(r'(proto\s)(?:.*)', '\g<1>' + proto, content)
 
         try:
             with open(filename, "w") as f:
@@ -144,7 +147,8 @@ class ApplicationStrategyNM(StrategicAlternative):
                    "##id##": config_id,
                    "##uuid##": str(uuid4()),
                    "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
-                   "##port##": properties.props.port}
+                   "##port##": properties.props.port,
+                   "##use-tcp##": "yes" if properties.props.protocol == "TCP" else "no"}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + config_id

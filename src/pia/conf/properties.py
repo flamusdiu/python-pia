@@ -31,17 +31,35 @@ class Props(object):
     """
     _hosts = []
     _port = ''
-    _default_port = '1194'
+    _default_port = ''
+    _usable_ports = []
     _conf_section = {}
+    _protocol = ''
     
     def __init__(self):
         self._exclude_apps = None
         self._debug = settings.DEBUG
         self._login_config = settings.LOGIN_CONFIG
         self._conf_file = settings.PIA_CONFIG
+        self._port = self._default_port
+        self._default_port = 'UDP/1194'
+        self._usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
+        self._protocol = 'UDP'
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
+
+    @property
+    def usable_ports(self):
+        return self._usable_ports
+
+    @property
+    def protocol(self):
+        return self._protocol
+
+    @protocol.setter
+    def protocol(self, value):
+        self._protocol = value
 
     @property
     def conf_file(self):
@@ -153,18 +171,17 @@ def parse_conf_file():
         appstrategy.set_option(getattr(props, 'openvpn'), autologin=getattr(pia_section, "openvpn_auto_login", False))
 
     if configure_section:
-        for app_name in getattr(configure_section, "apps", None):
+        for app_name in getattr(configure_section, "apps"):
             appstrategy.set_option(getattr(props, app_name), configure=True)
 
-        props.hosts = getattr(configure_section, "hosts", None)
+        props.hosts = getattr(configure_section, "hosts")
 
-        port = getattr(configure_section, "port", [props.default_port])[0]
+    port = getattr(configure_section, "port", [props.default_port])[0]
 
-        if 1 <= int(port) <= 65535:
-            props.port = port
-        else:
-            logger.warnings('%s out of range (1-65535). Using default port %s' % (port, props.default_port))
-            props.port = props.default_port
+    p = next((x for x in props.usable_ports if x.split('/')[1] == port), props.default_port)
+
+    if p:
+        props.protocol, props.port = p.split("/")
 
 
 def reset_port_number():
