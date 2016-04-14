@@ -18,9 +18,9 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
     strategic classes.
 
     Attributes:
-        command_bin: list containing which files to check if the application is installed
-        conf_dir: directory to the application stores it's configurations
-        configs: the list of openVPN configurations to modify
+        @command_bin: list containing which files to check if the application is installed
+        @conf_dir: directory to the application stores it's configurations
+        @configs: the list of openVPN configurations to modify
     """
     _COMMAND_BIN = ['/usr/bin/openvpn']
     _CONF_DIR = '/etc/openvpn'
@@ -44,7 +44,6 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
             filename: the filename of where to store the finished configuration file
-            enable: allows auto-login in openVPN configs
 
         Raises:
             OSError: problems with reading or writing configuration files
@@ -57,7 +56,6 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
                 content = f.read()
         except IOError:
             warnings.warn('Cannot access %s.' % config_id)
-
 
         content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
         content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port, content)
@@ -117,8 +115,8 @@ class ApplicationStrategyNM(StrategicAlternative):
     """Strategy file for NetworkManager.
 
     Attributes:
-        command_bin: list containing which files to check if the application is installed
-        conf_dir: directory to the application stores it's configurations
+        @command_bin: list containing which files to check if the application is installed
+        @conf_dir: directory to the application stores it's configurations
     """
     _CONF_DIR = '/etc/NetworkManager/system-connections'
     _COMMAND_BIN = ['/usr/bin/nmcli', '/usr/lib/networkmanager/nm-openvpn-service']
@@ -135,7 +133,6 @@ class ApplicationStrategyNM(StrategicAlternative):
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
             filename: the filename of where to store the finished configuration file
-            enable: NOT USED
         """
 
         # Gets VPN username and password
@@ -174,8 +171,8 @@ class ApplicationStrategyCM(StrategicAlternative):
     """Strategy file for Connman
 
     Attributes:
-        command_bin: list containing which files to check if the application is installed
-        conf_dir: directory to the application stores it's configurations
+        @command_bin: list containing which files to check if the application is installed
+        @conf_dir: directory to the application stores it's configurations
     """
     _CONF_DIR = '/var/lib/connman-vpn'
     _COMMAND_BIN = ['/usr/bin/connmanctl']
@@ -189,7 +186,6 @@ class ApplicationStrategyCM(StrategicAlternative):
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
             filename: the filename of where to store the finished configuration file
-            enable: NOT USED
 
         """
 

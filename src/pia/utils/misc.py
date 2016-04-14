@@ -50,8 +50,12 @@ def get_login_credentials(login_config):
     Returns:
         A list containing username and password for login service.
     """
-    if not has_proper_permissions(login_config):
-        logger.error('%s must be owned by root and not world readable!' % login_config)
+    try:
+        if not has_proper_permissions(login_config):
+            logger.error('%s must be owned by root and not world readable!' % login_config)
+            exit(1)
+    except OSError:
+        logger.error('%s is missing! Auto-configuration failed!' % login_config)
         exit(1)
 
     p = pathlib.Path(login_config)
@@ -59,7 +63,8 @@ def get_login_credentials(login_config):
         # Opens login.conf and reads login and passwords from file
         with p.open() as f:
             content = f.read().splitlines()
-    except OSError:
-        return None
 
-    return list(filter(bool,content))
+        return list(filter(bool, content))
+    except OSError:
+        logger.error('%s is missing! Auto-configuration failed!' % login_config)
+        exit(1)

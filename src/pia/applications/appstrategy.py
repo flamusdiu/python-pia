@@ -18,12 +18,11 @@
 import inspect
 import logging
 import os
-import re
+from re import compile, findall, escape
 import sys
 import warnings
 import pia
-from importlib import import_module
-from pia.conf import settings
+import importlib
 from pkg_resources import resource_string
 from pia.utils.misc import multiple_replace
 
@@ -37,7 +36,7 @@ class Application(object):
     or 'nm' for short. To call this class for NetworkManager, use Application("nm").
 
     Attributes:
-        strategy: name of the strategy this object refers to
+        @strategy: name of the strategy this object refers to
     """
 
     @property
@@ -71,7 +70,6 @@ class Application(object):
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
             filename: the filename of where to store the finished configuration file
-            enable: NOT USED
         """
         self.app.config(config_id, filename)
 
@@ -112,7 +110,8 @@ def build_strategy(strategy):
         Application object with the name strategy
     """
     application = Application()
-    application.app = getattr(import_module('pia.applications.hooks'), 'ApplicationStrategy' + strategy.upper())()
+    application.app = getattr(importlib.import_module('pia.applications.hooks'),
+                              'ApplicationStrategy' + strategy.upper())()
 
     return application
 
@@ -183,7 +182,7 @@ def get_supported_apps():
     apps = list()
 
     try:
-        import_module('pia.applications.hooks')
+        importlib.import_module('pia.applications.hooks')
     except OSError:
         logger.error("Cannot read application hooks.")
         sys.exit(1)
@@ -193,7 +192,7 @@ def get_supported_apps():
     logger.debug("Application hooks found: %s" % tmp_apps)
 
     for n in tmp_apps:
-        apps.extend([a.lower() for a in re.findall('ApplicationStrategy([A-Za-z]*)', n) if a])
+        apps.extend([a.lower() for a in findall('ApplicationStrategy([A-Za-z]*)', n) if a])
 
     return apps
 
@@ -214,10 +213,10 @@ class StrategicAlternative(object):
                 pass
 
     Attributes:
-        command_bin: list containing which files to check if the application is installed
-        conf_dir: directory to the application stores it's configurations
-        strategy: name of which strategy created this class
-        config_template: location of the application's config_template
+        @command_bin: list containing which files to check if the application is installed
+        @conf_dir: directory to the application stores it's configurations
+        @strategy: name of which strategy created this class
+        @config_template: location of the application's config_template
 
     """
     _CONF_DIR = ''
@@ -275,7 +274,7 @@ class StrategicAlternative(object):
             pass
 
         if hosts:
-            regex = re.compile("(%s)" % "|".join(map(re.escape, hosts)))
+            regex = compile("(%s)" % "|".join(map(escape, hosts)))
             cdir = [d for d in cdir if regex.match(d)]
 
         try:

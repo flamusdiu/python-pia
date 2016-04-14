@@ -157,7 +157,7 @@ Options:
 
     cli_options = CommandLineOptions()
 
-    options = docopt(commandline_interface.__doc__, version=__version__)
+    options = docopt(commandline_interface.__doc__.__str__(), version=__version__)
 
     [setattr(cli_options, opt, options[opt]) for opt in options]
 
