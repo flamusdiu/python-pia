@@ -34,7 +34,7 @@ with open(path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 setup(
     name='pia',
 
-    version='2.5',
+    version='2.6',
 
     description='Private Internet Access Auto Configuration',
     long_description=long_description,
@@ -69,6 +69,10 @@ setup(
     packages=find_packages('src', exclude=['contrib', 'docs', 'tests*']),
     package_dir={'': 'src'},
     package_data={'pia.applications': ['template-configs/*.cfg']},
+
+    install_requires = [
+      "docopt"
+    ],
 
     extras_require={
         'dev': ['check-manifest'],
