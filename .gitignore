@@ -59,3 +59,5 @@ target/
 
 #PyCharm
 .idea/
+
+setuptools-*
