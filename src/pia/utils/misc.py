@@ -26,9 +26,12 @@ logger = logging.getLogger(__name__)
 
 def has_proper_permissions(filepath):
     """Checks of file has 0600 permission and owned by root"""
-    st = os.stat(filepath)
+    try:
+        st = os.stat(filepath)
 
-    return bool(st.st_uid == 0 & st.st_gid == 0 & int(oct(stat.S_IMODE(os.stat(filepath).st_mode)) == "0o600"))
+        return bool(st.st_uid == 0 & st.st_gid == 0 & int(oct(stat.S_IMODE(os.stat(filepath).st_mode)) == "0o600"))
+    except FileNotFoundError:
+        raise FileNotFoundError(filepath + " not found!")
 
 
 def multiple_replace(dictionary, text):
@@ -54,17 +57,14 @@ def get_login_credentials(login_config):
         if not has_proper_permissions(login_config):
             logger.error('%s must be owned by root and not world readable!' % login_config)
             exit(1)
-    except OSError:
-        logger.error('%s is missing! Auto-configuration failed!' % login_config)
+    except FileNotFoundError as e:
+        logger.error('%s Auto-configuration failed!' % e.args)
         exit(1)
 
     p = pathlib.Path(login_config)
-    try:
-        # Opens login.conf and reads login and passwords from file
-        with p.open() as f:
-            content = f.read().splitlines()
 
-        return list(filter(bool, content))
-    except OSError:
-        logger.error('%s is missing! Auto-configuration failed!' % login_config)
-        exit(1)
+    # Opens login.conf and reads login and passwords from file
+    with p.open() as f:
+        content = f.read().splitlines()
+
+    return list(filter(bool, content))

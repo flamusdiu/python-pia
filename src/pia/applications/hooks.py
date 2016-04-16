@@ -1,4 +1,5 @@
 import glob
+import logging
 import os
 import pathlib
 import warnings
@@ -9,6 +10,8 @@ from collections import namedtuple
 from pia.conf import settings, properties
 from pia.utils.misc import get_login_credentials
 from pia.applications.appstrategy import StrategicAlternative
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationStrategyOPENVPN(StrategicAlternative):
@@ -55,7 +58,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
             with p.open() as f:
                 content = f.read()
         except IOError:
-            warnings.warn('Cannot access %s.' % config_id)
+            logger.warn('Cannot access %s.' % config_id)
 
         content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
         content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port, content)
@@ -66,9 +69,10 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
 
         try:
             with open(filename, "w") as f:
+                logger.debug("Writing file %s" %filename)
                 f.write(content)
         except IOError:
-            warnings.warn('Cannot access %s.' % config_id)
+            logger.warn('Cannot access %s.' % config_id)
 
     def _get_configs(self):
         """Gets the list of configuration files to be modified"""
@@ -105,7 +109,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
             with p.open() as f:
                 contents = f.read()
         except OSError:
-            warnings.warn('Cannot read %s to get remove address!' % config)
+            logger.warn('Cannot read %s to get remove address!' % config)
             return None
 
         return ''.join(re.findall("(?:remote.)(.*)(?:.\d{4})", contents))

@@ -7,7 +7,7 @@ PIA_CONFIG = '/etc/private-internet-access/pia.conf'
 #
 # Debugging information
 #
-DEBUG = False
+DEBUG = True
 
 
 #
