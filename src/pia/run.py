@@ -24,16 +24,19 @@ from pia import __version__
 from pia.conf import properties
 from pia.applications import appstrategy
 from pia.conf.properties import props
-from pia.docopt import docopt
+from docopt import docopt
+
+logger = logging.getLogger(__name__)
 
 # Checks to see which supported applications are installed
-props.apps = appstrategy.check_apps()
+appstrategy.check_apps()
 
 # Shortcut for the openvpn app object
 openvpn = props.openvpn.app
 
-logger = logging.getLogger(__name__)
-
+if not openvpn.configs:
+    logger.error ("Missing OpenVPN configurations in /etc/openvpn!")
+    exit(1)
 
 def run():
     """Main function run from command line"""
@@ -45,7 +48,6 @@ def run():
 
     # Make sure we are running as root
     if os.getuid() > 0:
-        props.debug = True
         logger.error('You must run this script with administrative privileges!')
         sys.exit(1)
 
@@ -54,12 +56,8 @@ def run():
     if props.commandline.hosts or props.hosts:
         custom_hosts()
 
-    try:
-        [globals()[k]() for k, v in props.commandline.__dict__.items() if
-            not k == 'hosts' and getattr(props.commandline, k, None)]
-    except KeyError:
-        docopt(globals()['commandline_interface'].__doc__, argv=['-h'], version=__version__)
-
+    [globals()[k]() for k, v in props.commandline.__dict__.items() if
+        not k == 'hosts' and getattr(props.commandline, k, None)]
 
 def exclude():
     """Excludes applications from being configured."""
@@ -109,14 +107,13 @@ def auto_configure():
 
 
 def commandline_interface():
-    """
+    """Configures PIA VPN Services for Connman, Network Manager, and OpenVPN
+
 Usage: pia -a [-d] [-e STRATEGIES] [HOST [HOST]... ]
        pia -r [-d] [HOST [HOST]... ]
        pia -l [-d]
        pia -h | --help
        pia --version
-
-Configures PIA VPN Services for Connman, Network Manager, and OpenVPN
 
 Arguments:
   HOST [HOST]...                       A list of host names to configure
@@ -131,9 +128,7 @@ Options:
   -d, --debug                          enables debug logging to console
   -h, --help                           show this help message and exit
   --version                            show program's version number and exit
-
     """
-
     class CommandLineOptions(object):
         def __repr__(self):
             opts = {}
