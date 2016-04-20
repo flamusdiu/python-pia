@@ -35,8 +35,9 @@ appstrategy.check_apps()
 openvpn = props.openvpn.app
 
 if not openvpn.configs:
-    logger.error ("Missing OpenVPN configurations in /etc/openvpn!")
+    logger.error("Missing OpenVPN configurations in /etc/openvpn!")
     exit(1)
+
 
 def run():
     """Main function run from command line"""
@@ -58,6 +59,7 @@ def run():
 
     [globals()[k]() for k, v in props.commandline.__dict__.items() if
         not k == 'hosts' and getattr(props.commandline, k, None)]
+
 
 def exclude():
     """Excludes applications from being configured."""
@@ -87,11 +89,13 @@ def custom_hosts():
 
 def remove_configurations():
     """Removes configurations based on openvpn.configs"""
+    logger.debug("Removing configurations!")
     for app_name in appstrategy.get_supported_apps():
         app = appstrategy.get_app(app_name)
         if app.strategy == 'openvpn':
-            props.port = props.default_port
+            properties.reset_properties()
             for config in openvpn.configs:
+                logger.debug("Removing config for %s" % config)
                 app.config(*getattr(openvpn, config))
         else:  # We don't want to delete OpenVPN files!
             app.remove_configs(openvpn.configs)

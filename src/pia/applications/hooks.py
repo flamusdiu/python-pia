@@ -51,6 +51,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         Raises:
             OSError: problems with reading or writing configuration files
         """
+
         p = pathlib.Path(filename)
         content = ''
 
@@ -61,15 +62,15 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
             logger.warn('Cannot access %s.' % config_id)
 
         content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
-        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port, content)
+        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port.split('/')[1], content)
 
-        proto = "tcp-client" if properties.props.protocol == "TCP" else "udp"
+        proto = "tcp-client" if properties.props.port.split('/')[0] == "TCP" else "udp"
 
         content = re.sub(r'(proto\s)(?:.*)', '\g<1>' + proto, content)
 
         try:
             with open(filename, "w") as f:
-                logger.debug("Writing file %s" %filename)
+                logger.debug("Writing file %s" % filename)
                 f.write(content)
         except IOError:
             logger.warn('Cannot access %s.' % config_id)
@@ -140,6 +141,7 @@ class ApplicationStrategyNM(StrategicAlternative):
         """
 
         # Gets VPN username and password
+
         username, password = get_login_credentials(settings.LOGIN_CONFIG)
 
         # Directory of replacement values for NetworkManager's configuration files
@@ -148,11 +150,11 @@ class ApplicationStrategyNM(StrategicAlternative):
                    "##id##": config_id,
                    "##uuid##": str(uuid4()),
                    "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
-                   "##port##": properties.props.port,
-                   "##use-tcp##": "yes" if properties.props.protocol == "TCP" else "no"}
+                   "##port##": properties.props.port.split('/')[1],
+                   "##use-tcp##": "yes" if properties.props.port.split('/')[0] == "TCP" else "no"}
 
         # Complete path of configuration file
-        conf = self.conf_dir + "/" + config_id
+        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id)
 
         # Modifies configuration file
         self.update_config(re_dict, conf)
@@ -166,7 +168,7 @@ class ApplicationStrategyNM(StrategicAlternative):
         Returns:
             Returns bool depending on if the configuration is already installed
         """
-        conf = self.conf_dir + "/" + config_id
+        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id)
 
         return os.access(conf, os.F_OK)
 
@@ -197,7 +199,9 @@ class ApplicationStrategyCM(StrategicAlternative):
         re_dict = {"##id##": config_id,
                    "##filename##": filename,
                    "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
-                   "##port##": properties.props.port}
+                   "##port##": properties.props.port.split('/')[1],
+                   "##cipher##": properties.props.cipher,
+                   "##auth##": properties.props.auth}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"

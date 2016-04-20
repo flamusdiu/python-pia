@@ -17,34 +17,34 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import configparser
+import logging
+
 from pia.applications import appstrategy
 from pia.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Props(object):
     """Global properties class.
-
-    Attributes:
-        login_config: path to where VPN login credentials are stored
-        progs: list of supported programs
-        apps: dictionary of application objects that will be configured
     """
     _hosts = []
     _port = ''
-    _default_port = ''
-    _usable_ports = []
     _conf_section = {}
-    _protocol = ''
-    
+    _cipher = ''
+    _auth = ''
+    _default_port = 'UDP/1194'
+    _usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
+    _usable_ciphers = ['AES-128-CBC', 'AES-256-CBC', 'BF-CBC', 'None']
+    _usable_auth = ['SHA-1', 'SHA-256']
+    _default_cipher = 'AES-128-CBC'
+    _default_auth = 'SHA-1'
+
     def __init__(self):
         self._exclude_apps = None
         self._debug = settings.DEBUG
         self._login_config = settings.LOGIN_CONFIG
         self._conf_file = settings.PIA_CONFIG
-        self._port = self._default_port
-        self._default_port = 'UDP/1194'
-        self._usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
-        self._protocol = 'UDP'
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
@@ -52,14 +52,6 @@ class Props(object):
     @property
     def usable_ports(self):
         return self._usable_ports
-
-    @property
-    def protocol(self):
-        return self._protocol
-
-    @protocol.setter
-    def protocol(self, value):
-        self._protocol = value
 
     @property
     def conf_file(self):
@@ -84,11 +76,56 @@ class Props(object):
 
     @port.setter
     def port(self, value):
-        self._port = value
+        try:
+            self._port = next(x for x in self._usable_ports if x.split('/')[1] == value)
+        except StopIteration:
+            logger.debug("%s not found in usable ports. Defaulting to %s" % (value, self._default_port))
+            self._port = self._default_port
+
+    @property
+    def usable_ciphers(self):
+        return self._usable_ciphers
+
+    @property
+    def usable_auth(self):
+        return self._usable_auth
+
+    @property
+    def cipher(self):
+        return self._cipher
+
+    @cipher.setter
+    def cipher(self, value):
+        try:
+            self._cipher = next(x for x in self._usable_ciphers if value == x)
+        except StopIteration:
+            logger.debug("%s not found in usable ciphers. Defaulting to %s" % (value, self._default_cipher))
+            self._cipher = self._default_cipher
+
+    @property
+    def auth(self):
+        return self._auth
+
+    @auth.setter
+    def auth(self, value):
+        try:
+            self._auth = next(x for x in self._usable_auth if value == x)
+        except StopIteration:
+            logger.debug("%s not found in usable authentication methods. Defaulting to %s"
+                         % (value, self._default_auth))
+            self._auth = self._default_auth
 
     @property
     def default_port(self):
         return self._default_port
+
+    @property
+    def default_auth(self):
+        return self._default_auth
+
+    @property
+    def default_cipher(self):
+        return self._default_cipher
 
     @property
     def debug(self):
@@ -145,10 +182,7 @@ class _Parser(object):
 
 
 def parse_conf_file():
-    import logging
 
-    logger = logging.getLogger(__name__)
-    
     """Parses configure file 'pia.conf' using the Parser Class"""
 
     try:
@@ -175,16 +209,16 @@ def parse_conf_file():
             appstrategy.set_option(getattr(props, app_name), configure=True)
 
         props.hosts = getattr(configure_section, "hosts")
-
-    port = getattr(configure_section, "port", [props.default_port])[0]
-
-    p = next((x for x in props.usable_ports if x.split('/')[1] == port), props.default_port)
-
-    if p:
-        props.protocol, props.port = p.split("/")
+        props.port = getattr(configure_section, "port", [props.default_port])[0]
+        props.cipher = getattr(configure_section,"cipher", [props.default_cipher])[0]
+        props.auth = getattr(configure_section,"auth", [props.default_auth])[0]
 
 
-def reset_port_number():
+def reset_properties():
     props.port = props.default_port
+    props.auth = props.default_auth
+    props.cipher = props.default_cipher
+    props.hosts = []
+
 
 props = Props()  # creates global property object
