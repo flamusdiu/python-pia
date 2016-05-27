@@ -1,5 +1,13 @@
 Changelog
 =========
+2.6 (2016-05-27)
+----------------
+- Removed static docopt dependancy
+- Updated setuptools version
+- Added options to 'pia.conf' for naming cipher and authenication
+  protocols. Only works for connman.
+- Other bug fixes and code cleanup
+
 2.5 (2015-10-28)
 ----------------
 - Added option to change port number and protocol of the distance gateway. Set in the configuration file
