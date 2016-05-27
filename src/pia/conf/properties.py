@@ -164,7 +164,7 @@ class _Parser(object):
         for key, value in self.__dict__.items():
             if value.find(':') > 0:
                 # dict
-                values = value.split(',')
+                values = value.replace(' ', '').split(',')
                 dicts = [{k: v} for k, v in [d.split(':') for d in values]]
                 merged = {}
                 for d in dicts:
@@ -173,7 +173,7 @@ class _Parser(object):
                 self.__dict__[key] = merged
             elif value.find(',') > 0:
                 # list
-                self.__dict__[key] = value.split(',')
+                self.__dict__[key] = value.replace(' ', '').split(',')
             else:
                 self.__dict__[key] = [value]
 
