@@ -1,5 +1,9 @@
 Changelog
 =========
+2.6.1 (2016-05-29)
+------------------
+- Really fixed the spaces around properties.
+
 2.6 (2016-05-27)
 ----------------
 - Removed static docopt dependancy
