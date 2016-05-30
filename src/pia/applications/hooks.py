@@ -26,6 +26,8 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
     """
     _COMMAND_BIN = ['/usr/bin/openvpn']
     _CONF_DIR = '/etc/openvpn'
+    _all_configs = []
+    _configs = []
 
     @property
     def configs(self):
@@ -38,7 +40,11 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
 
     def __init__(self):
         super().__init__('openvpn')
-        self._configs = self._get_configs()
+        self.configs = self._all_configs = self._get_configs()
+
+    @property
+    def all_configs (self):
+        return self._all_configs
 
     def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
@@ -60,11 +66,10 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         except IOError:
             logger.warn('Cannot access %s.' % config_id)
 
-        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
-        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port.split('/')[1], content)
-
         proto = "tcp-client" if properties.props.port.split('/')[0] == "TCP" else "udp"
 
+        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
+        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port.split('/')[1], content)
         content = re.sub(r'(proto\s)(?:.*)', '\g<1>' + proto, content)
 
         try:

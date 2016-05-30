@@ -1,7 +1,16 @@
 Changelog
 =========
+2.7 (2016-05-30)
+----------------
+- Debugging (through the `-d` flag should work now.
+- Fixed an issue when using `apps` in the configuration file. The sets it to ONLY
+  configure the apps listed. While on the commandline, you can use `-e` to EXCLUDE applications
+- Fixed `pia -r`. It now attempts removal of all configurations. This ignores the `hosts` flag in the
+  configuration file to keep from having stale configurations left behind when changing between
+  configurations.
+
 2.6.2 (2016-05-29)
------------------
+------------------
 - Fixed default properties
 
 2.6.1 (2016-05-29)

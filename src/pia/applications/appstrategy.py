@@ -59,7 +59,7 @@ class Application(object):
         return self.app.strategy
 
     def __init__(self):
-        self._configure = False
+        self.configure = False
         self.app = None
 
     def config(self, config_id, filename):
