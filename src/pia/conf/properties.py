@@ -41,10 +41,13 @@ class Props(object):
     _default_auth = 'SHA-1'
 
     def __init__(self):
-        self._exclude_apps = None
-        self._debug = settings.DEBUG
+        self.exclude_apps = None
+        self.debug = settings.DEBUG
         self._login_config = settings.LOGIN_CONFIG
         self._conf_file = settings.PIA_CONFIG
+        self.cipher = self.default_cipher
+        self.port = self.default_port
+        self.auth = self.default_auth
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
@@ -210,8 +213,8 @@ def parse_conf_file():
 
         props.hosts = getattr(configure_section, "hosts")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
-        props.cipher = getattr(configure_section,"cipher", [props.default_cipher])[0]
-        props.auth = getattr(configure_section,"auth", [props.default_auth])[0]
+        props.cipher = getattr(configure_section, "cipher", [props.default_cipher])[0]
+        props.auth = getattr(configure_section, "auth", [props.default_auth])[0]
 
 
 def reset_properties():
