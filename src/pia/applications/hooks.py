@@ -2,7 +2,6 @@ import glob
 import logging
 import os
 import pathlib
-import warnings
 import re
 
 from uuid import uuid4
