@@ -94,11 +94,11 @@ def remove_configurations():
         app = appstrategy.get_app(app_name)
         if app.strategy == 'openvpn':
             properties.reset_properties()
-            for config in openvpn.configs:
+            for config in openvpn.all_configs:
                 logger.debug("Removing config for %s" % config)
                 app.config(*getattr(openvpn, config))
         else:  # We don't want to delete OpenVPN files!
-            app.remove_configs(openvpn.configs)
+            app.remove_configs(openvpn.all_configs)
 
 
 def auto_configure():
@@ -107,6 +107,7 @@ def auto_configure():
         for app_name in appstrategy.get_supported_apps():
             app = appstrategy.get_app(app_name)
             if app.configure:
+                logger.debug("Configuring configurations for %s" % app_name)
                 app.config(*getattr(openvpn, config))
 
 
@@ -159,7 +160,6 @@ Options:
     options = docopt(commandline_interface.__doc__.__str__(), version=__version__)
 
     [setattr(cli_options, opt, options[opt]) for opt in options]
-
     return cli_options
 
 
@@ -194,3 +194,5 @@ def list_configurations():
 
 def debug():
     props.debug = True
+    logging.getLogger("root").setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)

@@ -33,6 +33,7 @@ class Props(object):
     _conf_section = {}
     _cipher = ''
     _auth = ''
+    _debug = ''
     _default_port = 'UDP/1194'
     _usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
     _usable_ciphers = ['AES-128-CBC', 'AES-256-CBC', 'BF-CBC', 'None']
@@ -134,10 +135,6 @@ class Props(object):
     def debug(self):
         return self._debug
 
-    @debug.setter
-    def debug(self, value):
-        self._debug = value
-
     @property
     def conf_section(self):
         return self._conf_section
@@ -145,6 +142,10 @@ class Props(object):
     @conf_section.setter
     def conf_section(self, value):
         self._conf_section = value
+
+    @debug.setter
+    def debug(self, value):
+        self._debug = value
 
 
 class _Parser(object):
@@ -208,8 +209,8 @@ def parse_conf_file():
         appstrategy.set_option(getattr(props, 'openvpn'), autologin=getattr(pia_section, "openvpn_auto_login", False))
 
     if configure_section:
-        for app_name in getattr(configure_section, "apps"):
-            appstrategy.set_option(getattr(props, app_name), configure=True)
+        [appstrategy.set_option(getattr(props, app_name), configure=False)
+         for app_name in appstrategy.get_supported_apps() if app_name not in getattr(configure_section, "apps")]
 
         props.hosts = getattr(configure_section, "hosts")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
