@@ -1,5 +1,9 @@
 Changelog
 =========
+2.6.2 (2016-05-29
+-----------------
+- Fixed default properties
+
 2.6.1 (2016-05-29)
 ------------------
 - Really fixed the spaces around properties.
