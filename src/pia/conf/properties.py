@@ -33,7 +33,7 @@ class Props(object):
     _conf_section = {}
     _cipher = ''
     _auth = ''
-    _default_port = 'UDP/1194'
+    _default_port = 'UDP/1198'
     _usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
     _usable_ciphers = ['AES-128-CBC', 'AES-256-CBC', 'BF-CBC', 'None']
     _usable_auth = ['SHA-1', 'SHA-256']
