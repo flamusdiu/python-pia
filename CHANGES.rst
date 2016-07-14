@@ -1,5 +1,9 @@
 Changelog
 =========
+2.8.2 (2016-07-13)
+------------------
+Removal of extra code
+
 2.8.1 (2016-07-13)
 ------------------
 Fixes auto-login not working
