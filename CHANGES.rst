@@ -1,5 +1,16 @@
 Changelog
 =========
+2.8.1 (2016-07-13)
+------------------
+Fixes auto-login not working
+
+2.8 (2016-07-13)
+----------------
+Changes because of this article:
+https://www.privateinternetaccess.com/forum/discussion/21796/vpn-connection-failed-message-with-new-configuration-files
+
+Note: The strong configurations are not working, yet. You can always manually configure them for now.
+      I plan to add support soon.
 2.7 (2016-05-30)
 ----------------
 - Debugging (through the `-d` flag should work now.

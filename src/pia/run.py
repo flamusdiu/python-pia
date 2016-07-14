@@ -104,6 +104,7 @@ def remove_configurations():
 def auto_configure():
     """Auto configures applications"""
     for config in openvpn.configs:
+        print(appstrategy.get_app("openvpn").__dict__)
         for app_name in appstrategy.get_supported_apps():
             app = appstrategy.get_app(app_name)
             if app.configure:
