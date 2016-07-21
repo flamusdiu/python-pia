@@ -157,6 +157,7 @@ class ApplicationStrategyNM(StrategicAlternative):
                    "##uuid##": str(uuid4()),
                    "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
                    "##port##": properties.props.port.split('/')[1],
+                   "##cipher##": properties.props.cipher,
                    "##use-tcp##": "yes" if properties.props.port.split('/')[0] == "TCP" else "no"}
 
         # Complete path of configuration file
