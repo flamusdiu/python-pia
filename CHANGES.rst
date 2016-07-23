@@ -1,5 +1,11 @@
 Changelog
 =========
+2.9 (2016-07-22)
+----------------
+-A bit of code clean up.
+-Fixed auto-configuration not actually adding the login path to the files for OpenVPN
+-NetworkManager fixed to add cipher as a configurable option (Fixed with #10 and #11)
+
 2.8.2 (2016-07-13)
 ------------------
 Removal of extra code
