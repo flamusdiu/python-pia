@@ -40,6 +40,14 @@ class Application(object):
     """
 
     @property
+    def app (self):
+        return self._app
+
+    @app.setter
+    def app(self,a):
+        self._app = a
+
+    @property
     def configure(self):
         return self._configure
 
@@ -49,7 +57,7 @@ class Application(object):
 
     @property
     def strategy(self):
-        """Returns then strategy name.
+        """Returns the strategy name.
 
         Returns strategy name from when this class was created.
 
@@ -59,8 +67,8 @@ class Application(object):
         return self.app.strategy
 
     def __init__(self):
-        self.configure = False
-        self.app = None
+        self._configure = False
+        self._app = None
 
     def config(self, config_id, filename):
         """Configures configuration file for the given strategy.
@@ -169,7 +177,6 @@ def check_apps():
     for app in apps:
         a = build_strategy(app)
         a.configure = a.is_installed()
-
         pia.conf.properties.props.__dict__[app] = a
 
 

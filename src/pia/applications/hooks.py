@@ -40,7 +40,6 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
 
     def __init__(self):
         super().__init__('openvpn')
-        self.configure = True
         self.configs = self._all_configs = self._get_configs()
 
     @property
@@ -73,7 +72,6 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port.split('/')[1], content)
         content = re.sub(r'(proto\s)(?:.*)', '\g<1>' + proto, content)
 
-        print(content)
         try:
             with open(filename, "w") as f:
                 logger.debug("Writing file %s" % filename)

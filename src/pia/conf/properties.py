@@ -212,6 +212,8 @@ def parse_conf_file():
         [appstrategy.set_option(getattr(props, app_name), configure=False)
          for app_name in appstrategy.get_supported_apps() if app_name not in getattr(configure_section, "apps")]
 
+        appstrategy.set_option(getattr(props, "openvpn"), configure=True)
+
         props.hosts = getattr(configure_section, "hosts")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
         props.cipher = getattr(configure_section, "cipher", [props.default_cipher])[0]
