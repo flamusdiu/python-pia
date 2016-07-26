@@ -1,11 +1,8 @@
-import glob
 import logging
 import os
-import pathlib
 import re
 
 from uuid import uuid4
-from collections import namedtuple
 from pia.conf import settings, properties
 from pia.utils.misc import get_login_credentials
 from pia.applications.appstrategy import StrategicAlternative
@@ -26,7 +23,6 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
     """
     _COMMAND_BIN = ['/usr/bin/openvpn']
     _CONF_DIR = '/etc/openvpn'
-    _all_configs = []
     _configs = []
 
     @property
@@ -40,84 +36,42 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
 
     def __init__(self):
         super().__init__('openvpn')
-        self.configs = self._all_configs = self._get_configs()
 
-    @property
-    def all_configs (self):
-        return self._all_configs
-
-    def config(self, config_id, filename):
+    def config(self, config_id):
         """Configures configuration file for the given strategy.
 
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
-            filename: the filename of where to store the finished configuration file
 
         Raises:
             OSError: problems with reading or writing configuration files
         """
 
-        p = pathlib.Path(filename)
-        content = ''
+        # Directory of replacement values for OpenVPN's configuration files
+        re_dict = {"##port##": properties.props.port.split('/')[1],
+                   "##cipher##": properties.props.cipher,
+                   "##proto##": properties.props.port.split('/')[0].lower(),
+                   "##cert_modulus##": properties.props.cert_modulus,
+                   "##login_config##": properties.settings.LOGIN_CONFIG,
+                   "##remote##": self.get_remote_address(config_id),
+                   "##auth##": properties.props.auth}
 
-        try:
-            with p.open() as f:
-                content = f.read()
-        except IOError:
-            logger.warn('Cannot access %s.' % config_id)
+        # Complete path of configuration file
+        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".conf"
 
-        proto = "tcp-client" if properties.props.port.split('/')[0] == "TCP" else "udp"
-
-        content = re.sub(r'(auth-user-pass)(?:.*)', '\g<1> ' + settings.LOGIN_CONFIG, content)
-        content = re.sub(r'(remote\s.*\.privateinternetaccess\.com\s)(?:\d*)', '\g<1>' + properties.props.port.split('/')[1], content)
-        content = re.sub(r'(proto\s)(?:.*)', '\g<1>' + proto, content)
-
-        try:
-            with open(filename, "w") as f:
-                logger.debug("Writing file %s" % filename)
-                f.write(content)
-        except IOError:
-            logger.warn('Cannot access %s.' % config_id)
-
-    def _get_configs(self):
-        """Gets the list of configuration files to be modified"""
-
-        config = namedtuple('Config', 'name, conf')
-        for filename in glob.glob(self.conf_dir + '/*.conf'):
-            c = {'name': re.sub('_', ' ', re.match(r"^/(.*/)*(.+)\.conf$", filename).group(2)),
-                 'conf': filename}
-            var_name = re.sub(' ', '_', re.match(r"^/(.*/)*(.+)\.conf$", filename).group(2))
-            self.__dict__[var_name] = config(**c)
-
-        return [i for i, j in self.__dict__.items() if type(self.__dict__[i]).__name__ == 'Config']
+        # Modifies configuration file
+        self.update_config(re_dict, conf)
 
     def find_config(self, config_id):
         """Not implemented for OpenVPN. No need to search for a configuration."""
         raise NotImplementedError('%s does not implement find_config()!' % self.__module__.__name__)
 
     @staticmethod
-    def get_remote_address(config):
+    def get_remote_address(config_id):
         """Finds the remote server host/ip address
-
-        Args:
-            config: string with the full path to configuration file
-
-        Returns:
-            Returns the host or ip address in the OpenVPN configuration file
-
-        Raises:
-            OSError: problems reading configuration file
-
         """
-        p = pathlib.Path(config)
-        try:
-            with p.open() as f:
-                contents = f.read()
-        except OSError:
-            logger.warn('Cannot read %s to get remove address!' % config)
-            return None
 
-        return ''.join(re.findall("(?:remote.)(.*)(?:.\d{4})", contents))
+        return [h.fqdn for h in properties.props.pia_hosts_list if h.name == re.sub('_', ' ', config_id)][0]
 
 
 class ApplicationStrategyNM(StrategicAlternative):
@@ -133,7 +87,7 @@ class ApplicationStrategyNM(StrategicAlternative):
     def __init__(self):
         super().__init__('nm')
 
-    def config(self, config_id, filename):
+    def config(self, config_id):
         """Configures configuration file for the given strategy.
 
         NetworkManager requires VPN credentials in its configuration files. So, those are
@@ -141,7 +95,6 @@ class ApplicationStrategyNM(StrategicAlternative):
 
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
-            filename: the filename of where to store the finished configuration file
         """
 
         # Gets VPN username and password
@@ -153,10 +106,12 @@ class ApplicationStrategyNM(StrategicAlternative):
                    "##password##": password,
                    "##id##": config_id,
                    "##uuid##": str(uuid4()),
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
+                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(config_id),
                    "##port##": properties.props.port.split('/')[1],
-                   "##cipher##": properties.props.cipher,
-                   "##use-tcp##": "yes" if properties.props.port.split('/')[0] == "TCP" else "no"}
+                   "##cipher##": properties.props.cipher.upper(),
+                   "##use_tcp##": "yes" if properties.props.port.split('/')[0] == "TCP" else "no",
+                   "##cert_modulus##": properties.props.cert_modulus,
+                   "##auth##": properties.props.auth.upper()}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id)
@@ -191,22 +146,23 @@ class ApplicationStrategyCM(StrategicAlternative):
     def __init__(self):
         super().__init__('cm')
 
-    def config(self, config_id, filename):
+    def config(self, config_id):
         """Configures configuration file for the given strategy.
 
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
-            filename: the filename of where to store the finished configuration file
 
         """
 
         # Directory of replacement values for connman's configuration files
         re_dict = {"##id##": config_id,
-                   "##filename##": filename,
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(filename),
+                   "##filename##": properties.appstrategy.get_app('openvpn').app.conf_dir + "/" +
+                                   re.sub(' ', '_', config_id) + '.conf',
+                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(config_id),
                    "##port##": properties.props.port.split('/')[1],
                    "##cipher##": properties.props.cipher,
-                   "##auth##": properties.props.auth}
+                   "##auth##": properties.props.auth,
+                   "##cert_modulus##": properties.props.cert_modulus}
 
         # Complete path of configuration file
         conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"

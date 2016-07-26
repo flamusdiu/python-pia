@@ -18,12 +18,17 @@
 import inspect
 import logging
 import os
-from re import compile, findall, escape
+from re import findall, escape
 import sys
 import warnings
+
+import re
+
 import pia
 import importlib
 from pkg_resources import resource_string
+
+from pia.conf import properties
 from pia.utils.misc import multiple_replace
 
 logger = logging.getLogger(__name__)
@@ -40,11 +45,11 @@ class Application(object):
     """
 
     @property
-    def app (self):
+    def app(self):
         return self._app
 
     @app.setter
-    def app(self,a):
+    def app(self, a):
         self._app = a
 
     @property
@@ -70,21 +75,45 @@ class Application(object):
         self._configure = False
         self._app = None
 
-    def config(self, config_id, filename):
+    def config(self, config_id,):
         """Configures configuration file for the given strategy.
 
         Calls the function config(config_id, filename) directly on the strategy object stored in self.app.
 
         Args:
             config_id: the name of the profile (i.e. "US East") used as the name of the VPN endpoint
-            filename: the filename of where to store the finished configuration file
         """
-        self.app.config(config_id, filename)
+        self.app.config(config_id)
 
-    def remove_configs(self, hosts):
-        """Removes VPN configurations for a strategy"""
+    def remove_configs(self):
+        """Removes all configurations for a strategy
 
-        self.app.remove_configs(self.app.conf_dir, hosts)
+        Raises:
+            OSError: Throws if config cannot be removed
+            FileNotFoundError: Thrown if the configuration directory doesn't exists
+
+        """
+
+        hosts = [re.sub(" ", "_",h) for h in properties.props.hosts]
+        conf_dir = self.app.conf_dir
+
+        cdir = []
+
+        try:
+            cdir = os.listdir(conf_dir)
+        except FileNotFoundError:
+            pass
+
+        if hosts:
+            regex = re.compile("(%s)" % "|".join(map(escape, hosts)))
+            cdir = [d for d in cdir if regex.match(d)]
+
+        try:
+            for f in cdir:
+                path = os.path.join(conf_dir, f)
+                os.remove(path)
+        except OSError:
+            pass
 
     def is_installed(self):
         """Checks to see if application for a strategy is installed"""
@@ -256,40 +285,9 @@ class StrategicAlternative(object):
     def __repr__(self):
         return '<%s %s:%s>' % ('StrategicAlternative.' + type(self).__name__, 'strategy', self._strategy)
 
-    def config(self, config_id, filename):
+    def config(self, config_id):
         """Implemented in the subclass to modify configuration template for each VPN endpoint"""
         pass
-
-    @staticmethod
-    def remove_configs(conf_dir, hosts=None):
-        """Removes all configurations for a strategy
-
-        Arguments:
-            conf_dir: Directory where the configurations are stored for the object
-            hosts: list of hosts to remove configurations
-
-        Raises:
-            OSError: Throws if config cannot be removed
-            FileNotFoundError: Thrown if the configuration directory doesn't exists
-
-        """
-        cdir = []
-
-        try:
-            cdir = os.listdir(conf_dir)
-        except FileNotFoundError:
-            pass
-
-        if hosts:
-            regex = compile("(%s)" % "|".join(map(escape, hosts)))
-            cdir = [d for d in cdir if regex.match(d)]
-
-        try:
-            for f in cdir:
-                path = os.path.join(conf_dir, f)
-                os.remove(path)
-        except OSError:
-            pass
 
     def update_config(self, re_dict, conf):
         """Modifies configuration file with dictionary

@@ -3,6 +3,7 @@
 #
 LOGIN_CONFIG = '/etc/private-internet-access/login.conf'
 PIA_CONFIG = '/etc/private-internet-access/pia.conf'
+PIA_HOST_LIST = '/etc/private-internet-access/vpn-hosts.txt'
 
 #
 # Debugging information

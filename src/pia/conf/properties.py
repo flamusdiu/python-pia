@@ -18,9 +18,11 @@
 
 import configparser
 import logging
+from collections import namedtuple
 
 from pia.applications import appstrategy
 from pia.conf import settings
+from pia.utils.misc import is_sequence
 
 logger = logging.getLogger(__name__)
 
@@ -28,18 +30,23 @@ logger = logging.getLogger(__name__)
 class Props(object):
     """Global properties class.
     """
+    _pia_hosts_list = {}
     _hosts = []
     _port = ''
     _conf_section = {}
     _cipher = ''
     _auth = ''
     _debug = ''
+    _cert_modulus = ''
+    _strong_encryption = ''
     _default_port = 'UDP/1198'
     _usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
-    _usable_ciphers = ['AES-128-CBC', 'AES-256-CBC', 'BF-CBC', 'None']
-    _usable_auth = ['SHA-1', 'SHA-256']
-    _default_cipher = 'AES-128-CBC'
-    _default_auth = 'SHA-1'
+    _usable_ciphers = ['aes-128-cbc', 'aes-256-cbc', 'bf-cbc', 'None']
+    _usable_auth = ['sha1', 'sha256']
+    _usable_cert_modulus = ['2048', '4096']
+    _default_cipher = 'aes-128-cbc'
+    _default_auth = 'sha1'
+    _default_cert_modulus = '2048'
 
     def __init__(self):
         self.exclude_apps = None
@@ -49,9 +56,37 @@ class Props(object):
         self.cipher = self.default_cipher
         self.port = self.default_port
         self.auth = self.default_auth
+        self.cert_modulus = self.default_cert_modulus
+        self._pia_hosts_list = get_pia_hosts_list()
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
+
+    @property
+    def default_cert_modulus(self):
+        return self._default_cert_modulus
+
+    @property
+    def strong_encryption(self):
+        return self._strong_encryption
+
+    @strong_encryption.setter
+    def strong_encryption(self, choice):
+        if is_sequence(choice):
+            choice = choice[0]
+
+        if choice:
+            self.port = 'UDP/1197'
+            self.auth = 'SHA-256'
+            self.cipher = 'AES-256-CBC'
+            self.cert_modulus = '4096'
+        else:
+            self.port = self.default_port
+            self.auth = self.default_auth
+            self.cipher = self.default_cipher
+            self.cert_modulus = self.default_cert_modulus
+
+        self._strong_encryption = choice
 
     @property
     def usable_ports(self):
@@ -80,11 +115,30 @@ class Props(object):
 
     @port.setter
     def port(self, value):
-        try:
-            self._port = next(x for x in self._usable_ports if x.split('/')[1] == value)
-        except StopIteration:
-            logger.debug("%s not found in usable ports. Defaulting to %s" % (value, self._default_port))
-            self._port = self._default_port
+        if not self.strong_encryption:
+            try:
+                self._port = next(x for x in self._usable_ports if x.split('/')[1] == value)
+            except StopIteration:
+                logger.debug("%s not found in usable ports. Defaulting to %s" % (value, self._default_port))
+                self._port = self._default_port
+        else:
+            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
+
+    @property
+    def cert_modulus(self):
+        return self._cert_modulus
+
+    @cert_modulus.setter
+    def cert_modulus(self, value):
+        if not self.strong_encryption:
+            try:
+                self._cert_modulus = next(x for x in self._usable_cert_modulus if value == x)
+            except StopIteration:
+                logger.debug("%s not found in usable cert modulus. Defaulting to %s" %
+                             (value, self._default_cert_modulus))
+                self._cert_modulus = self._default_cert_modulus
+        else:
+            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
 
     @property
     def usable_ciphers(self):
@@ -100,11 +154,14 @@ class Props(object):
 
     @cipher.setter
     def cipher(self, value):
-        try:
-            self._cipher = next(x for x in self._usable_ciphers if value == x)
-        except StopIteration:
-            logger.debug("%s not found in usable ciphers. Defaulting to %s" % (value, self._default_cipher))
-            self._cipher = self._default_cipher
+        if not self.strong_encryption:
+            try:
+                self._cipher = next(x for x in self._usable_ciphers if value == x)
+            except StopIteration:
+                logger.debug("%s not found in usable ciphers. Defaulting to %s" % (value, self._default_cipher))
+                self._cipher = self._default_cipher
+        else:
+            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
 
     @property
     def auth(self):
@@ -112,12 +169,15 @@ class Props(object):
 
     @auth.setter
     def auth(self, value):
-        try:
-            self._auth = next(x for x in self._usable_auth if value == x)
-        except StopIteration:
-            logger.debug("%s not found in usable authentication methods. Defaulting to %s"
-                         % (value, self._default_auth))
-            self._auth = self._default_auth
+        if not self.strong_encryption:
+            try:
+                self._auth = next(x for x in self._usable_auth if value == x)
+            except StopIteration:
+                logger.debug("%s not found in usable authentication methods. Defaulting to %s"
+                             % (value, self._default_auth))
+                self._auth = self._default_auth
+        else:
+            logger.warning("Strong encryption enables! Ignoring manual authentication settings!")
 
     @property
     def default_port(self):
@@ -146,6 +206,10 @@ class Props(object):
     @conf_section.setter
     def conf_section(self, value):
         self._conf_section = value
+
+    @property
+    def pia_hosts_list(self):
+        return self._pia_hosts_list
 
 
 class _Parser(object):
@@ -207,6 +271,7 @@ def parse_conf_file():
 
     if pia_section:
         appstrategy.set_option(getattr(props, 'openvpn'), autologin=getattr(pia_section, "openvpn_auto_login", False))
+        props.strong_encryption = getattr(pia_section, "strong_encryption", False)
 
     if configure_section:
         [appstrategy.set_option(getattr(props, app_name), configure=False)
@@ -220,11 +285,26 @@ def parse_conf_file():
         props.auth = getattr(configure_section, "auth", [props.default_auth])[0]
 
 
+def enable_strong_encryption():
+    props.strong_encryption = True
+
+
 def reset_properties():
+    props.strong_encryption = False
     props.port = props.default_port
     props.auth = props.default_auth
     props.cipher = props.default_cipher
     props.hosts = []
+
+
+def get_pia_hosts_list():
+    all_remotes = []
+    remote = namedtuple('Remote', 'name fqdn')
+    for host in open(settings.PIA_HOST_LIST):
+        h, d = host.replace('\n', '').split(',')
+        all_remotes.append(remote(name=h, fqdn=d))
+
+    return all_remotes
 
 
 props = Props()  # creates global property object

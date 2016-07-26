@@ -34,15 +34,14 @@ appstrategy.check_apps()
 # Shortcut for the openvpn app object
 openvpn = props.openvpn.app
 
-if not openvpn.configs:
-    logger.error("Missing OpenVPN configurations in /etc/openvpn!")
-    exit(1)
-
 
 def run():
     """Main function run from command line"""
     logger.debug('Parsing commandline args...')
     props.commandline = commandline_interface()
+
+    if props.commandline.hosts or props.hosts:
+        custom_hosts()
 
     if props.commandline.list_configurations:
         list_configurations()
@@ -92,13 +91,7 @@ def remove_configurations():
     logger.debug("Removing configurations!")
     for app_name in appstrategy.get_supported_apps():
         app = appstrategy.get_app(app_name)
-        if app.strategy == 'openvpn':
-            properties.reset_properties()
-            for config in openvpn.all_configs:
-                logger.debug("Removing config for %s" % config)
-                app.config(*getattr(openvpn, config))
-        else:  # We don't want to delete OpenVPN files!
-            app.remove_configs(openvpn.all_configs)
+        app.remove_configs()
 
 
 def auto_configure():
@@ -108,7 +101,7 @@ def auto_configure():
             app = appstrategy.get_app(app_name)
             if app.configure:
                 logger.debug("Configuring configurations for %s" % app_name)
-                app.config(*getattr(openvpn, config))
+                app.config(config)
 
 
 def commandline_interface():
