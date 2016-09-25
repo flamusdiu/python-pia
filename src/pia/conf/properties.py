@@ -76,9 +76,9 @@ class Props(object):
             choice = choice[0]
 
         if choice:
-            self.port = 'UDP/1197'
-            self.auth = 'SHA-256'
-            self.cipher = 'AES-256-CBC'
+            self._port = 'UDP/1197'
+            self.auth = 'sha256'
+            self.cipher = 'aes-256-cbc'
             self.cert_modulus = '4096'
         else:
             self.port = self.default_port
@@ -121,8 +121,6 @@ class Props(object):
             except StopIteration:
                 logger.debug("%s not found in usable ports. Defaulting to %s" % (value, self._default_port))
                 self._port = self._default_port
-        else:
-            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
 
     @property
     def cert_modulus(self):
@@ -137,8 +135,6 @@ class Props(object):
                 logger.debug("%s not found in usable cert modulus. Defaulting to %s" %
                              (value, self._default_cert_modulus))
                 self._cert_modulus = self._default_cert_modulus
-        else:
-            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
 
     @property
     def usable_ciphers(self):
@@ -160,8 +156,6 @@ class Props(object):
             except StopIteration:
                 logger.debug("%s not found in usable ciphers. Defaulting to %s" % (value, self._default_cipher))
                 self._cipher = self._default_cipher
-        else:
-            logger.warning("Strong encryption enabled! Ignoring manual cipher settings!")
 
     @property
     def auth(self):
@@ -176,8 +170,6 @@ class Props(object):
                 logger.debug("%s not found in usable authentication methods. Defaulting to %s"
                              % (value, self._default_auth))
                 self._auth = self._default_auth
-        else:
-            logger.warning("Strong encryption enables! Ignoring manual authentication settings!")
 
     @property
     def default_port(self):
