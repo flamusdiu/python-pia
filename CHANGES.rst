@@ -1,5 +1,10 @@
 Changelog
 =========
+3.0 (2016-10-25)
+----------------
+-Added Strong Encryption configurations
+-New file was added to list PIA hosts. This is created when the package is installed from AUR.
+
 2.9 (2016-07-22)
 ----------------
 -A bit of code clean up.
