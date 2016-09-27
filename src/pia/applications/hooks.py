@@ -71,7 +71,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         """Finds the remote server host/ip address
         """
 
-        return [h.fqdn for h in properties.props.pia_hosts_list if h.name == re.sub('_', ' ', config_id)][0]
+        return [h.fqdn for h in properties.props.default_hosts_list if h.name == re.sub('_', ' ', config_id)][0]
 
 
 class ApplicationStrategyNM(StrategicAlternative):

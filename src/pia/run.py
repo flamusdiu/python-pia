@@ -40,8 +40,7 @@ def run():
     logger.debug('Parsing commandline args...')
     props.commandline = commandline_interface()
 
-    if props.commandline.hosts or props.hosts:
-        custom_hosts()
+    set_hosts()
 
     if props.commandline.list_configurations:
         list_configurations()
@@ -52,9 +51,6 @@ def run():
         sys.exit(1)
 
     properties.parse_conf_file()
-
-    if props.commandline.hosts or props.hosts:
-        custom_hosts()
 
     [globals()[k]() for k, v in props.commandline.__dict__.items() if
         not k == 'hosts' and getattr(props.commandline, k, None)]
@@ -69,7 +65,7 @@ def exclude():
             app.configure = False
 
 
-def custom_hosts():
+def set_hosts():
     """Creates custom hosts list
 
     The host list is built from either commandline (by listing them after all other options)
@@ -77,13 +73,17 @@ def custom_hosts():
     together. This then replaces the openvpn config list on which hosts to modify.
 
     """
-    custom_configs = props.hosts or list()
+    configs = list()
+
     # Gets list of Hosts input from commandline
     if props.commandline.auto_configure:
-        custom_configs.extend(props.commandline.hosts)
+        configs.extend(props.commandline.hosts)
 
-    # Removes any duplicate names
-    openvpn.configs = list(set([re.sub(' ', '_', h.strip()) for h in custom_configs]))
+    if configs:
+        # Removes any duplicate names
+        openvpn.configs = list(set([re.sub(' ', '_', h.strip()) for h in configs]))
+    else:
+        openvpn.configs = [re.sub(' ', '_', h.name) for h in properties.get_default_hosts_list()]
 
 
 def remove_configurations():
@@ -96,11 +96,14 @@ def remove_configurations():
 
 def auto_configure():
     """Auto configures applications"""
+    print(openvpn.configs)
     for config in openvpn.configs:
+        print(config)
         for app_name in appstrategy.get_supported_apps():
             app = appstrategy.get_app(app_name)
             if app.configure:
                 logger.debug("Configuring configurations for %s" % app_name)
+                print(config)
                 app.config(config)
 
 

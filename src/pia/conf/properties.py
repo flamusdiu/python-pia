@@ -57,7 +57,7 @@ class Props(object):
         self.port = self.default_port
         self.auth = self.default_auth
         self.cert_modulus = self.default_cert_modulus
-        self._pia_hosts_list = get_pia_hosts_list()
+        self._default_hosts_list = get_default_hosts_list()
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
@@ -200,8 +200,8 @@ class Props(object):
         self._conf_section = value
 
     @property
-    def pia_hosts_list(self):
-        return self._pia_hosts_list
+    def default_hosts_list(self):
+        return self._default_hosts_list
 
 
 class _Parser(object):
@@ -267,11 +267,12 @@ def parse_conf_file():
 
     if configure_section:
         [appstrategy.set_option(getattr(props, app_name), configure=False)
-         for app_name in appstrategy.get_supported_apps() if app_name not in getattr(configure_section, "apps")]
+         for app_name in appstrategy.get_supported_apps()
+         if app_name not in getattr(configure_section, "apps", appstrategy.get_supported_apps())]
 
         appstrategy.set_option(getattr(props, "openvpn"), configure=True)
 
-        props.hosts = getattr(configure_section, "hosts")
+        props.hosts = getattr(configure_section, "hosts", "")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
         props.cipher = getattr(configure_section, "cipher", [props.default_cipher])[0]
         props.auth = getattr(configure_section, "auth", [props.default_auth])[0]
@@ -289,7 +290,7 @@ def reset_properties():
     props.hosts = []
 
 
-def get_pia_hosts_list():
+def get_default_hosts_list():
     all_remotes = []
     remote = namedtuple('Remote', 'name fqdn')
     for host in open(settings.PIA_HOST_LIST):
