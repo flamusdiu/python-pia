@@ -83,7 +83,7 @@ def set_hosts():
         # Removes any duplicate names
         openvpn.configs = list(set([re.sub(' ', '_', h.strip()) for h in configs]))
     else:
-        openvpn.configs = [re.sub(' ', '_', h.name) for h in properties.get_default_hosts_list()]
+        openvpn.configs = [re.sub(' ', '_', h) for h in properties.get_default_hosts_list(names_only=True)]
 
 
 def remove_configurations():
@@ -96,14 +96,11 @@ def remove_configurations():
 
 def auto_configure():
     """Auto configures applications"""
-    print(openvpn.configs)
     for config in openvpn.configs:
-        print(config)
         for app_name in appstrategy.get_supported_apps():
             app = appstrategy.get_app(app_name)
             if app.configure:
                 logger.debug("Configuring configurations for %s" % app_name)
-                print(config)
                 app.config(config)
 
 

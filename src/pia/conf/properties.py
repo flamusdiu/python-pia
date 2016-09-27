@@ -103,7 +103,7 @@ class Props(object):
 
     @property
     def hosts(self):
-        return self._hosts
+        return self._hosts or get_default_hosts_list(names_only=True)
 
     @hosts.setter
     def hosts(self, value):
@@ -290,12 +290,15 @@ def reset_properties():
     props.hosts = []
 
 
-def get_default_hosts_list():
+def get_default_hosts_list(names_only=False):
     all_remotes = []
     remote = namedtuple('Remote', 'name fqdn')
     for host in open(settings.PIA_HOST_LIST):
         h, d = host.replace('\n', '').split(',')
-        all_remotes.append(remote(name=h, fqdn=d))
+        if not names_only:
+            all_remotes.append(remote(name=h, fqdn=d))
+        else:
+            all_remotes.append(h)
 
     return all_remotes
 
