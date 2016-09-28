@@ -4,6 +4,7 @@ Changelog
 ----------------
 - OpenVPN fixes
 - Code style changes
+- Removed protocol/port numbers for unable combinations. See #17
 
 3.0 (2016-09-25)
 ----------------
