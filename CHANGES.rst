@@ -1,5 +1,10 @@
 Changelog
 =========
+3.1 (2016-09-29)
+----------------
+- OpenVPN fixes
+- Code style changes
+
 3.0 (2016-09-25)
 ----------------
 - Added Strong Encryption configurations
