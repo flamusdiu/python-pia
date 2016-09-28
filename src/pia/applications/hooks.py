@@ -48,16 +48,16 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         """
 
         # Directory of replacement values for OpenVPN's configuration files
-        re_dict = {"##port##": properties.props.port.split('/')[1],
-                   "##cipher##": properties.props.cipher,
-                   "##proto##": properties.props.port.split('/')[0].lower(),
-                   "##cert_modulus##": properties.props.cert_modulus,
-                   "##login_config##": properties.settings.LOGIN_CONFIG,
-                   "##remote##": self.get_remote_address(config_id),
-                   "##auth##": properties.props.auth}
+        re_dict = {'##port##': properties.props.port.split('/')[1],
+                   '##cipher##': properties.props.cipher,
+                   '##proto##': properties.props.port.split('/')[0].lower(),
+                   '##cert_modulus##': properties.props.cert_modulus,
+                   '##login_config##': properties.settings.LOGIN_CONFIG,
+                   '##remote##': self.get_remote_address(config_id),
+                   '##auth##': properties.props.auth}
 
         # Complete path of configuration file
-        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".conf"
+        conf = self.conf_dir + '/' + re.sub(' ', '_', config_id) + '.conf'
 
         # Modifies configuration file
         self.update_config(re_dict, conf)
@@ -102,19 +102,19 @@ class ApplicationStrategyNM(StrategicAlternative):
         username, password = get_login_credentials(settings.LOGIN_CONFIG)
 
         # Directory of replacement values for NetworkManager's configuration files
-        re_dict = {"##username##": username,
-                   "##password##": password,
-                   "##id##": config_id,
-                   "##uuid##": str(uuid4()),
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(config_id),
-                   "##port##": properties.props.port.split('/')[1],
-                   "##cipher##": properties.props.cipher.upper(),
-                   "##use_tcp##": "yes" if properties.props.port.split('/')[0] == "TCP" else "no",
-                   "##cert_modulus##": properties.props.cert_modulus,
-                   "##auth##": properties.props.auth.upper()}
+        re_dict = {'##username##': username,
+                   '##password##': password,
+                   '##id##': config_id,
+                   '##uuid##': str(uuid4()),
+                   '##remote##': ApplicationStrategyOPENVPN.get_remote_address(config_id),
+                   '##port##': properties.props.port.split('/')[1],
+                   '##cipher##': properties.props.cipher.upper(),
+                   '##use_tcp##': "yes" if properties.props.port.split('/')[0] == 'TCP' else 'no',
+                   '##cert_modulus##': properties.props.cert_modulus,
+                   '##auth##': properties.props.auth.upper()}
 
         # Complete path of configuration file
-        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id)
+        conf = self.conf_dir + '/' + re.sub(' ', '_', config_id)
 
         # Modifies configuration file
         self.update_config(re_dict, conf)
@@ -155,17 +155,17 @@ class ApplicationStrategyCM(StrategicAlternative):
         """
 
         # Directory of replacement values for connman's configuration files
-        re_dict = {"##id##": config_id,
-                   "##filename##": properties.appstrategy.get_app('openvpn').app.conf_dir + "/" +
+        re_dict = {'##id##': config_id,
+                   '##filename##': properties.appstrategy.get_app('openvpn').app.conf_dir + '/' +
                                    re.sub(' ', '_', config_id) + '.conf',
-                   "##remote##": ApplicationStrategyOPENVPN.get_remote_address(config_id),
-                   "##port##": properties.props.port.split('/')[1],
-                   "##cipher##": properties.props.cipher,
-                   "##auth##": properties.props.auth,
-                   "##cert_modulus##": properties.props.cert_modulus}
+                   '##remote##': ApplicationStrategyOPENVPN.get_remote_address(config_id),
+                   '##port##': properties.props.port.split('/')[1],
+                   '##cipher##': properties.props.cipher,
+                   '##auth##': properties.props.auth,
+                   '##cert_modulus##': properties.props.cert_modulus}
 
         # Complete path of configuration file
-        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"
+        conf = self.conf_dir + '/' + re.sub(' ', '_', config_id) + '.config'
 
         # Modifies configuration file
         self.update_config(re_dict, conf)
@@ -180,6 +180,6 @@ class ApplicationStrategyCM(StrategicAlternative):
             Returns bool depending on if the configuration is already installed
 
         """
-        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + ".config"
+        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + '.config'
 
         return os.access(conf, os.F_OK)

@@ -94,7 +94,7 @@ class Application(object):
 
         """
 
-        hosts = [re.sub(" ", "_",h) for h in properties.props.hosts]
+        hosts = [re.sub(' ', '_', h) for h in properties.props.hosts]
         conf_dir = self.app.conf_dir
 
         cdir = []
