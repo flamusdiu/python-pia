@@ -63,8 +63,18 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         self.update_config(re_dict, conf)
 
     def find_config(self, config_id):
-        """Not implemented for OpenVPN. No need to search for a configuration."""
-        raise NotImplementedError('%s does not implement find_config()!' % self.__module__.__name__)
+        """Find if a configuration is configured
+
+        Args:
+            config_id: configuration name
+
+        Returns:
+            Returns bool depending on if the configuration is already installed
+
+        """
+        conf = self.conf_dir + "/" + re.sub(' ', '_', config_id) + '.conf'
+
+        return os.access(conf, os.F_OK)
 
     @staticmethod
     def get_remote_address(config_id):

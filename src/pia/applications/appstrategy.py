@@ -94,7 +94,7 @@ class Application(object):
 
         """
 
-        hosts = [re.sub(' ', '_', h) for h in properties.props.hosts]
+        hosts = [re.sub(' ', '_', h) for h in properties.get_default_hosts_list(names_only=True)]
         conf_dir = self.app.conf_dir
 
         cdir = []
@@ -347,4 +347,9 @@ class StrategicAlternative(object):
         Returns:
             Returns bool depending on if the configuration is already installed
         """
-        pass
+        os_access = os.access(self.conf_dir + '/' + re.sub(' ', '_', config_id), os.F_OK)
+
+        if not os_access:
+            os_access = os.access(self.conf_dir + '/' + re.sub(' ', '_', config_id) + '.conf', os.F_OK)
+
+        return os_access

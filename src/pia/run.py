@@ -96,7 +96,7 @@ def remove_configurations():
 
 def auto_configure():
     """Auto configures applications"""
-    for config in openvpn.configs:
+    for config in properties.props.hosts:
         for app_name in appstrategy.get_supported_apps():
             app = appstrategy.get_app(app_name)
             if app.configure:
@@ -158,30 +158,29 @@ Options:
 
 def list_configurations():
     """Prints a list of installed OpenVPN configurations."""
-    lis = appstrategy.get_app('openvpn').app.configs
+    lis = properties.get_default_hosts_list(names_only=True)
     configs = dict()
-    for c in lis:
-        configs[c] = []
 
     # Checks if configuration is installed for a given config_id
-    for app_name in appstrategy.get_supported_apps():
-        app = appstrategy.get_app(app_name)
-        if not app.strategy == 'openvpn' and app.configure:
-                for c in lis:
-                    if app.find_config(c):
-                        logger.debug('Configuring %s for %s' % (c, app.strategy))
-                        configs[c].extend([app.strategy])
+    for c in sorted(lis):
+        config = {'host': re.sub('_', ' ', c), 'openvpn': '', 'apps': ''}
 
-    if len(configs) > 0:
-        # Prints out the list
+        for app_name in appstrategy.get_supported_apps():
+            app = appstrategy.get_app(app_name)
+            if app.configure and app.find_config(c):
+                logger.debug('Configuring %s for %s' % (c, app.strategy))
+                if app_name == 'openvpn':
+                    config['openvpn'] = '*'
+                else:
+                    config['apps'] += '[' + app_name + ']'
+        configs[c] = config
+
         print("List of OpenVPN configurations")
-        for c in sorted(configs):
-            dis = ''
-            for app in configs[c]:
-                dis += '[' + app + ']'
-            print('   %s %s' % (re.sub('_', ' ', c), dis))
-    else:
-        logger.info("No OpenVPN configurations found!")
+    for c in configs:
+        if configs[c]['openvpn']:
+            print('  {openvpn} {host} {apps}'.format(**configs[c]))
+        else:
+            print('    {host} {apps}'.format(**configs[c]))
     sys.exit()
 
 
