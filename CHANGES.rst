@@ -1,5 +1,9 @@
 Changelog
 =========
+3.2.1 (2016-10-01)
+------------------
+- Fix the default value for cert_modulus fixeds #19
+
 3.2 (2016-10-01)
 ----------------
 - Minor Fixes for Openvpn
