@@ -91,7 +91,7 @@ class Props(object):
         defaults = {'port': 'UDP/1198',
                     'auth': 'sha1',
                     'cipher': 'aes-128-cbc',
-                    'cert_modulus': '2096'}
+                    'cert_modulus': '2048'}
         
         if attr:
             return getattr(defaults, attr)
