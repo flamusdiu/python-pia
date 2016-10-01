@@ -1,5 +1,10 @@
 Changelog
 =========
+3.2 (2016-10-01)
+----------------
+- Minor Fixes for Openvpn
+- Internal changes
+
 3.1 (2016-09-29)
 ----------------
 - OpenVPN fixes
