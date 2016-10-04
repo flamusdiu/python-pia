@@ -87,30 +87,6 @@ class Props(object):
         self._strong_encryption = choice
 
     @property
-    def default_encryption_settings(self, attr):
-        defaults = {'port': 'UDP/1198',
-                    'auth': 'sha1',
-                    'cipher': 'aes-128-cbc',
-                    'cert_modulus': '2048'}
-        
-        if attr:
-            return getattr(defaults, attr)
-        
-        return defaults
-        
-    @property
-    def default_strong_encryption_settings(self, attr):
-        defaults = {'port': 'UDP/1197',
-                    'auth': 'sha256',
-                    'cipher': 'aes-256-cbc',
-                    'cert_modulus': '4096'}
-
-        if attr:
-            return getattr(defaults, attr)
-
-        return defaults
-
-    @property
     def usable_strong_ports(self):
         return self._usable_strong_ports
 
@@ -334,7 +310,7 @@ def default_encryption_settings(attr=''):
     defaults = {'port': 'UDP/1198',
                 'auth': 'sha1',
                 'cipher': 'aes-128-cbc',
-                'cert_modulus': '2096'}
+                'cert_modulus': '2048'}
 
     if attr:
         return defaults[attr] or ''
