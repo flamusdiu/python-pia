@@ -22,7 +22,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
         @configs: the list of openVPN configurations to modify
     """
     _COMMAND_BIN = ['/usr/bin/openvpn']
-    _CONF_DIR = '/etc/openvpn'
+    _CONF_DIR = '/etc/openvpn/client'
     _configs = []
 
     @property

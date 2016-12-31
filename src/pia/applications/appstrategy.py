@@ -18,6 +18,7 @@
 import inspect
 import logging
 import os
+import shutil
 from re import findall, escape
 import sys
 import warnings
@@ -315,8 +316,8 @@ class StrategicAlternative(object):
 
         try:
             logger.debug('Changing permission on %s.' % conf)
-            os.chmod(conf, 0o600)  # Sets permissions to Read, Write, to Owner only.
-            os.chown(conf, 0, 0)  # Sets ownership to root:root (uid 0).
+            os.chmod(conf, 0o640)  # Sets permissions to Read, Write, to Owner only.
+            shutil.chown(conf, "root", "network")  # Sets ownership to root:root (uid 0).
             logger.debug('Changing permission on %s was successful.' % conf)
         except OSError:
             warnings.warn("Cannot change permissions on %s." % conf)
