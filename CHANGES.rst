@@ -1,5 +1,28 @@
 Changelog
 =========
+3.2.3 (2016-12-30)
+------------------
+- Updated setuptools
+- Fixed cert modulus (for real this time)
+- Updated openvpn configurations
+  See: https://www.archlinux.org/news/openvpn-240-update-requires-administrative-interaction/
+
+3.2.2 (2016-10-04)
+------------------
+Default encryption changes
+
+- Removed extra properties for defaults.
+- Fixed cert modulus (fixes #19 and #20 )
+
+3.2.1 (2016-10-01)
+------------------
+- Fix the default value for cert_modulus fixes #19
+
+3.2 (2016-10-01)
+----------------
+- Minor Fixes for Openvpn
+- Internal changes
+
 3.1 (2016-09-29)
 ----------------
 - OpenVPN fixes
