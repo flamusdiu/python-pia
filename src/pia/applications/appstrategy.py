@@ -176,10 +176,10 @@ def set_option(application, **kwargs):
             if application:
                 application.__dict__[opt] = kwargs[opt]
             else:
-                logger.warn('Cannot set opt: %s on a %s!' % (opt, type(application).__name__))
+                logger.warning('Cannot set opt: %s on a %s!' % (opt, type(application).__name__))
 
     for opt in bad_options:
-        logger.warn("Option %s is not unsupported." % opt)
+        logger.warning("Option %s is not unsupported." % opt)
  
 
 def get_app(app_key):

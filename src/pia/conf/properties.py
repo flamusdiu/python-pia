@@ -22,7 +22,6 @@ from collections import namedtuple
 
 from pia.applications import appstrategy
 from pia.conf import settings
-from pia.utils.misc import is_sequence
 
 logger = logging.getLogger(__name__)
 
@@ -36,63 +35,88 @@ class Props(object):
     _conf_section = {}
     _cipher = ''
     _auth = ''
+    _protocol = ''
     _debug = ''
-    _cert_modulus = ''
-    _strong_encryption = ''
-    _usable_strong_ports = ['TCP/501', 'UDP/1197']
-    # _usable_ports = ['TCP/80', 'TCP/443', 'TCP/110', 'UDP/53', 'UDP/8080', 'UDP/9201']
-    _usable_ports = ['TCP/502', 'UDP/1198']
-    _usable_ciphers = ['aes-128-cbc', 'aes-256-cbc', 'bf-cbc', 'None']
-    _usable_auth = ['sha1', 'sha256']
-    _usable_cert_modulus = ['2048', '4096']
+    _root_ca = ''
+    _root_crl = ''
+    _default_port = '1197'
+    _config_lookup = {
+        'default': {
+            'cipher:': 'aes-128-cbc',
+            'auth': 'sha1',
+            'root_ca': 'ca.rsa.2048.crt',
+            'root_crl': 'crl.rsa.2048.pem'
+        },
+        'strong': {
+            'cipher': 'aes-256-cbc',
+            'auth': 'sha256',
+            'root_ca': 'ca.rsa.4096.crt',
+            'root_crl': 'crl.rsa.4096.pem'
+        },
+        'alternative': {
+            'cipher': 'bf-cbc',
+            'auth': 'sha1',
+            'root_ca': 'ca.crt',
+            'root_crl': 'crl.pem'
+        }
+    }
+    _port_lookup = {
+        '53': {
+            'protocol': 'udp',
+            'config': 'alternative'
+        },
+        '80': {
+            'protocol': 'tcp',
+            'config': 'alternative'
+        },
+        '110': {
+            'protocol': 'tcp',
+            'config': 'alternative'
+        },
+        '443': {
+            'protocol': 'tcp',
+            'config': 'alternative'
+        },
+        '501': {
+            'protocol': 'tcp',
+            'config': 'strong'
+        },
+        '502': {
+            'protocol': 'tcp',
+            'config': 'default'
+        },
+        '1194': {
+            'protocol': 'udp',
+            'config': 'alternative'
+        },
+        '1197': {
+            'protocol': 'udp',
+            'config': 'strong'
+        },
+        '1198': {
+            'protocol': 'udp',
+            'config': 'default'
+        },
+        '8080': {
+            'protocol': 'udp',
+            'config': 'alternative'
+        },
+        '9201': {
+            'protocol': 'udp',
+            'config': 'alternative'
+        },
+    }
 
     def __init__(self):
         self.exclude_apps = None
         self.debug = settings.DEBUG
         self._login_config = settings.LOGIN_CONFIG
         self._conf_file = settings.PIA_CONFIG
-        self.cipher = default_encryption_settings('cipher')
-        self.port = default_encryption_settings('port')
-        self.auth = default_encryption_settings('auth')
-        self.cert_modulus = default_encryption_settings('cert_modulus')
+        self.port = self._default_port
         self._default_hosts_list = get_default_hosts_list()
 
     def __repr__(self):
         return '<%s %s:%s>' % (self.__class__.__name__, 'hosts', self._hosts)
-
-    @property
-    def default_cert_modulus(self):
-        return default_encryption_settings('cert_modulus')
-
-    @property
-    def strong_encryption(self):
-        return self._strong_encryption
-
-    @strong_encryption.setter
-    def strong_encryption(self, choice):
-        if is_sequence(choice):
-            choice = choice[0]
-
-        if choice:
-            self._port = default_encryption_settings('port')
-            self.auth = default_encryption_settings('auth')
-            self.cipher = default_encryption_settings('cipher')
-            self.cert_modulus = default_encryption_settings('cert_modulus')
-        else:
-            self.port = default_encryption_settings('port')
-            self.auth = default_encryption_settings('auth')
-            self.cipher = default_encryption_settings('cipher')
-            self.cert_modulus = default_encryption_settings('cert_modulus')
-
-        self._strong_encryption = choice
-
-    @property
-    def usable_strong_ports(self):
-        return self._usable_strong_ports
-
-    @property
-    def usable_ports(self):
-        return self._usable_ports
 
     @property
     def conf_file(self):
@@ -115,77 +139,45 @@ class Props(object):
     def port(self):
         return self._port
 
+    @property
+    def protocol(self):
+        return self._protocol
+
+    @property
+    def root_ca(self):
+        return self._root_ca
+
+    @property
+    def root_crl(self):
+        return self._root_crl
+
     @port.setter
     def port(self, value):
-        if not self.strong_encryption:
-            try:
-                self._port = next(x for x in self._usable_ports if x.split('/')[1] == value)
-            except StopIteration:
-                logger.debug("%s not found in usable ports. Defaulting to %s" %
-                             (value, default_encryption_settings('port')))
-                self._port = default_encryption_settings('port')
+        try:
+            self._port = value
+            config = self._config_lookup[self._port_lookup[value]['config']]
+            self._auth = config['auth']
+            self._cipher = config['cipher']
+            self._root_ca = config['root_ca']
+            self._root_crl = config['root_crl']
+            self._protocol = self._port_lookup[value]['protocol']
+
+        except StopIteration:
+            logger.debug("%s not found in usable ports. Defaulting to %s" %
+                         (value, self.default_port))
+            self._port = self.default_port
 
     @property
-    def cert_modulus(self):
-        return self._cert_modulus
-
-    @cert_modulus.setter
-    def cert_modulus(self, value):
-        if not self.strong_encryption:
-            try:
-                self._cert_modulus = next(x for x in self._usable_cert_modulus if value == x)
-            except StopIteration:
-                logger.debug("%s not found in usable cert modulus. Defaulting to %s" %
-                             (value, default_encryption_settings('cert_modulus')))
-                self._cert_modulus = default_encryption_settings('cert_modulus')
-
-    @property
-    def usable_ciphers(self):
-        return self._usable_ciphers
-
-    @property
-    def usable_auth(self):
-        return self._usable_auth
+    def default_port(self):
+        return self._default_port
 
     @property
     def cipher(self):
         return self._cipher
 
-    @cipher.setter
-    def cipher(self, value):
-        if not self.strong_encryption:
-            try:
-                self._cipher = next(x for x in self._usable_ciphers if value == x)
-            except StopIteration:
-                logger.debug("%s not found in usable ciphers. Defaulting to %s" %
-                             (value, default_encryption_settings('cipher')))
-                self._cipher = default_encryption_settings('cipher')
-
     @property
     def auth(self):
         return self._auth
-
-    @auth.setter
-    def auth(self, value):
-        if not self.strong_encryption:
-            try:
-                self._auth = next(x for x in self._usable_auth if value == x)
-            except StopIteration:
-                logger.debug("%s not found in usable authentication methods. Defaulting to %s"
-                             % (value, default_encryption_settings('auth')))
-                self._auth = default_encryption_settings('auth')
-
-    @property
-    def default_port(self):
-        return default_encryption_settings('port')
-
-    @property
-    def default_auth(self):
-        return default_encryption_settings('auth')
-
-    @property
-    def default_cipher(self):
-        return default_encryption_settings('cipher')
 
     @property
     def debug(self):
@@ -277,8 +269,6 @@ def parse_conf_file():
 
         props.hosts = getattr(configure_section, "hosts", "")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
-        props.cipher = getattr(configure_section, "cipher", [props.default_cipher])[0]
-        props.auth = getattr(configure_section, "auth", [props.default_auth])[0]
 
 
 def enable_strong_encryption():
@@ -288,8 +278,6 @@ def enable_strong_encryption():
 def reset_properties():
     props.strong_encryption = False
     props.port = props.default_port
-    props.auth = props.default_auth
-    props.cipher = props.default_cipher
     props.hosts = []
 
 
@@ -304,30 +292,6 @@ def get_default_hosts_list(names_only=False):
             all_remotes.append(h)
 
     return all_remotes
-
-
-def default_encryption_settings(attr=''):
-    defaults = {'port': 'UDP/1198',
-                'auth': 'sha1',
-                'cipher': 'aes-128-cbc',
-                'cert_modulus': '2048'}
-
-    if attr:
-        return defaults[attr] or ''
-
-    return defaults
-
-
-def default_strong_encryption_settings(attr=''):
-    defaults = {'port': 'UDP/1197',
-                'auth': 'sha256',
-                'cipher': 'aes-256-cbc',
-                'cert_modulus': '4096'}
-
-    if attr:
-        return defaults[attr] or ''
-
-    return defaults
 
 
 props = Props()  # creates global property object
