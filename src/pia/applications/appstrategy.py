@@ -316,7 +316,7 @@ class StrategicAlternative(object):
 
         try:
             logger.debug('Changing permission on %s.' % conf)
-            os.chmod(conf, 0o640)  # Sets permissions to Read, Write, to Owner only.
+            os.chmod(conf, 0o600)  # Sets permissions to Read, Write, to Owner only.
             shutil.chown(conf, "root", "network")  # Sets ownership to root:root (uid 0).
             logger.debug('Changing permission on %s was successful.' % conf)
         except OSError:
