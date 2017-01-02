@@ -1,5 +1,11 @@
 Changelog
 =========
+3.3 (2016-01-01)
+----------------
+- Refactored the way ports/cipher/auth is set.
+- Removed strong encryption property
+- Other minor changes
+
 3.2.3 (2016-12-30)
 ------------------
 - Updated setuptools
