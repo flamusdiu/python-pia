@@ -271,10 +271,6 @@ def parse_conf_file():
         props.port = getattr(configure_section, "port", [props.default_port])[0]
 
 
-def enable_strong_encryption():
-    props.strong_encryption = True
-
-
 def reset_properties():
     props.strong_encryption = False
     props.port = props.default_port
