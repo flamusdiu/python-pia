@@ -1,6 +1,12 @@
 Changelog
 =========
-3.3 (2016-01-01)
+3.3.1 (2017-01-04)
+------------------
+- Fixed typos in Changelog
+- Changed default port from 1197 to 1198
+- Fixed minor typo causing default port to not work. Fixes #25.
+
+3.3 (2017-01-01)
 ----------------
 - Refactored the way ports/cipher/auth is set.
 - Removed strong encryption property
@@ -61,6 +67,7 @@ https://www.privateinternetaccess.com/forum/discussion/21796/vpn-connection-fail
 
 Note: The strong configurations are not working, yet. You can always manually configure them for now.
       I plan to add support soon.
+
 2.7 (2016-05-30)
 ----------------
 - Debugging (through the `-d` flag should work now.
