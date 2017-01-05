@@ -39,10 +39,10 @@ class Props(object):
     _debug = ''
     _root_ca = ''
     _root_crl = ''
-    _default_port = '1197'
+    _default_port = '1198'
     _config_lookup = {
         'default': {
-            'cipher:': 'aes-128-cbc',
+            'cipher': 'aes-128-cbc',
             'auth': 'sha1',
             'root_ca': 'ca.rsa.2048.crt',
             'root_crl': 'crl.rsa.2048.pem'
