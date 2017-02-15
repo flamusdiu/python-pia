@@ -1,5 +1,9 @@
 Changelog
 =========
+3.3.2 (2017-02-14)
+------------------
+- Merged #29 fixes some minor issues.
+
 3.3.1 (2017-01-04)
 ------------------
 - Fixed typos in Changelog
