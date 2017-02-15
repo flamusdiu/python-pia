@@ -175,7 +175,7 @@ def list_configurations():
                     config['apps'] += '[' + app_name + ']'
         configs[c] = config
 
-        print("List of OpenVPN configurations")
+    print("List of OpenVPN configurations")
     for c in configs:
         if configs[c]['openvpn']:
             print('  {openvpn} {host} {apps}'.format(**configs[c]))
