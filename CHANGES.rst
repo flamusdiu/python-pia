@@ -1,5 +1,9 @@
 Changelog
 =========
+3.3.3 (2017-12-16)
+------------------
+ - Updated NewtorkManager paths. Fixes #39
+
 3.3.2 (2017-02-14)
 ------------------
 - Merged #29 fixes some minor issues.
