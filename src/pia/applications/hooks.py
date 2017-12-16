@@ -93,7 +93,7 @@ class ApplicationStrategyNM(StrategicAlternative):
         @conf_dir: directory to the application stores it's configurations
     """
     _CONF_DIR = '/etc/NetworkManager/system-connections'
-    _COMMAND_BIN = ['/usr/bin/nmcli', '/usr/lib/NetworkManager/nm-openvpn-service']
+    _COMMAND_BIN = ['/usr/bin/nmcli', '/usr/lib/nm-openvpn-service']
 
     def __init__(self):
         super().__init__('nm')
