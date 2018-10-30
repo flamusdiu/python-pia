@@ -49,6 +49,7 @@ class ApplicationStrategyOPENVPN(StrategicAlternative):
 
         # Directory of replacement values for OpenVPN's configuration files
         re_dict = {'##port##': properties.props.port,
+                   '##dev##': properties.props.dev,
                    '##cipher##': properties.props.cipher,
                    '##proto##': properties.props.protocol.lower(),
                    '##root_ca##': properties.props.root_ca,
@@ -119,6 +120,7 @@ class ApplicationStrategyNM(StrategicAlternative):
                    '##uuid##': str(uuid4()),
                    '##remote##': ApplicationStrategyOPENVPN.get_remote_address(config_id),
                    '##port##': properties.props.port,
+                   '##dev##': properties.props.dev,
                    '##cipher##': properties.props.cipher.upper(),
                    '##use_tcp##': "yes" if properties.props.protocol.upper() == 'TCP' else 'no',
                    '##root_ca##': properties.props.root_ca,

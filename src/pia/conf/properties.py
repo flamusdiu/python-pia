@@ -32,6 +32,7 @@ class Props(object):
     _pia_hosts_list = {}
     _hosts = []
     _port = ''
+    _dev = ''
     _conf_section = {}
     _cipher = ''
     _auth = ''
@@ -40,6 +41,7 @@ class Props(object):
     _root_ca = ''
     _root_crl = ''
     _default_port = '1198'
+    _default_dev = 'tun'
     _config_lookup = {
         'default': {
             'cipher': 'aes-128-cbc',
@@ -113,6 +115,7 @@ class Props(object):
         self._login_config = settings.LOGIN_CONFIG
         self._conf_file = settings.PIA_CONFIG
         self.port = self._default_port
+        self.dev = self._default_dev
         self._default_hosts_list = get_default_hosts_list()
 
     def __repr__(self):
@@ -138,6 +141,10 @@ class Props(object):
     @property
     def port(self):
         return self._port
+
+    @property
+    def dev(self):
+        return self._dev
 
     @property
     def protocol(self):
@@ -167,9 +174,20 @@ class Props(object):
                          (value, self.default_port))
             self._port = self.default_port
 
+    @dev.setter
+    def dev(self, value):
+        if value:
+            self._dev = value
+        else:
+            self._dev = self.default_dev
+
     @property
     def default_port(self):
         return self._default_port
+
+    @property
+    def default_dev(self):
+        return self._default_dev
 
     @property
     def cipher(self):
@@ -269,11 +287,13 @@ def parse_conf_file():
 
         props.hosts = getattr(configure_section, "hosts", "")
         props.port = getattr(configure_section, "port", [props.default_port])[0]
+        props.dev = getattr(configure_section, "dev", [props.default_dev])[0]
 
 
 def reset_properties():
     props.strong_encryption = False
     props.port = props.default_port
+    props.dev = props.default_dev
     props.hosts = []
 
 
