@@ -53,30 +53,8 @@ class Props(object):
             'root_ca': 'ca.rsa.4096.crt',
             'root_crl': 'crl.rsa.4096.pem'
         },
-        'alternative': {
-            'cipher': 'bf-cbc',
-            'auth': 'sha1',
-            'root_ca': 'ca.crt',
-            'root_crl': 'crl.pem'
-        }
     }
     _port_lookup = {
-        '53': {
-            'protocol': 'udp',
-            'config': 'alternative'
-        },
-        '80': {
-            'protocol': 'tcp',
-            'config': 'alternative'
-        },
-        '110': {
-            'protocol': 'tcp',
-            'config': 'alternative'
-        },
-        '443': {
-            'protocol': 'tcp',
-            'config': 'alternative'
-        },
         '501': {
             'protocol': 'tcp',
             'config': 'strong'
@@ -85,10 +63,6 @@ class Props(object):
             'protocol': 'tcp',
             'config': 'default'
         },
-        '1194': {
-            'protocol': 'udp',
-            'config': 'alternative'
-        },
         '1197': {
             'protocol': 'udp',
             'config': 'strong'
@@ -96,14 +70,6 @@ class Props(object):
         '1198': {
             'protocol': 'udp',
             'config': 'default'
-        },
-        '8080': {
-            'protocol': 'udp',
-            'config': 'alternative'
-        },
-        '9201': {
-            'protocol': 'udp',
-            'config': 'alternative'
         },
     }
 
